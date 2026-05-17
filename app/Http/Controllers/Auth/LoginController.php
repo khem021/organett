@@ -27,6 +27,14 @@ class LoginController extends Controller
             ]);
         }
 
+        // Block inactive accounts even if credentials are correct
+        if (Auth::user()->status !== 'active') {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => 'Your account has been deactivated. Please contact the administrator.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended('/dashboard');
