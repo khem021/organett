@@ -88,8 +88,10 @@ class OrganettSeeder extends Seeder
             ['id' => 2, 'order_id' => 2, 'customer_id' => 2, 'sale_date' => '2026-03-18', 'quantity_kg' => 10.00, 'amount' => 2000.00, 'payment_method' => 'Bank Transfer', 'remarks' => 'Partial payment.', 'created_at' => now(), 'updated_at' => now()],
             ['id' => 3, 'order_id' => 3, 'customer_id' => 4, 'sale_date' => '2026-04-06', 'quantity_kg' => 22.00, 'amount' => 4510.00, 'payment_method' => 'GCash', 'remarks' => 'Paid upon delivery.', 'created_at' => now(), 'updated_at' => now()],
             ['id' => 4, 'order_id' => 5, 'customer_id' => 5, 'sale_date' => '2026-04-15', 'quantity_kg' => 8.00, 'amount' => 1800.00, 'payment_method' => 'Digital Wallet', 'remarks' => 'Initial payment.', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 5, 'order_id' => null, 'customer_id' => 6, 'sale_date' => '2026-04-16', 'quantity_kg' => 4.00, 'amount' => 760.00, 'payment_method' => 'Cash', 'remarks' => 'Walk-in gate sale.', 'created_at' => now(), 'updated_at' => now()],
-            ['id' => 6, 'order_id' => null, 'customer_id' => 1, 'sale_date' => '2026-04-17', 'quantity_kg' => 3.00, 'amount' => 630.00, 'payment_method' => 'Cash', 'remarks' => 'Small supplemental sale.', 'created_at' => now(), 'updated_at' => now()],
+            // Note: walk-in sales (id 5 & 6) removed — order_id is NOT NULL in this schema.
+            // Walk-in sales must be linked to an order (e.g. order 4 or 6).
+            ['id' => 5, 'order_id' => 4, 'customer_id' => 6, 'sale_date' => '2026-04-16', 'quantity_kg' => 4.00, 'amount' => 760.00, 'payment_method' => 'Cash', 'remarks' => 'Walk-in gate sale — linked to coop order.', 'created_at' => now(), 'updated_at' => now()],
+            ['id' => 6, 'order_id' => 6, 'customer_id' => 1, 'sale_date' => '2026-04-17', 'quantity_kg' => 3.00, 'amount' => 630.00, 'payment_method' => 'Cash', 'remarks' => 'Supplemental sale linked to weekend order.', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
         DB::table('alerts')->insertOrIgnore([
