@@ -20,6 +20,13 @@ APP_DIR="/var/www/organett"
 DB_NAME="organett"
 DB_USER="organett_user"
 DB_PASS="$(openssl rand -base64 20 | tr -d '/+=' | head -c 24)"
+
+# ── MAIL (Gmail SMTP) — optional but needed for Forgot Password emails ────────
+# To enable: fill in your Gmail address and a Gmail App Password.
+# Get an App Password at: https://myaccount.google.com/apppasswords
+# (Requires 2-Step Verification to be ON for your Google account)
+MAIL_USERNAME=""       # your Gmail address, e.g. yourname@gmail.com
+MAIL_PASSWORD=""       # 16-character Gmail App Password, e.g. abcd efgh ijkl mnop
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Colors
@@ -154,11 +161,30 @@ CACHE_STORE=file
 BROADCAST_CONNECTION=log
 FILESYSTEM_DISK=local
 QUEUE_CONNECTION=sync
+ENV
 
+# Append mail config — use Gmail SMTP if credentials were provided, otherwise log driver
+if [ -n "$MAIL_USERNAME" ] && [ -n "$MAIL_PASSWORD" ]; then
+cat >> .env << ENV
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=${MAIL_USERNAME}
+MAIL_PASSWORD=${MAIL_PASSWORD}
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="${MAIL_USERNAME}"
+MAIL_FROM_NAME="Organett"
+ENV
+  ok "Mail configured → Gmail SMTP (${MAIL_USERNAME})"
+else
+cat >> .env << ENV
 MAIL_MAILER=log
 MAIL_FROM_ADDRESS="hello@${APP_DOMAIN}"
 MAIL_FROM_NAME="Organett"
 ENV
+  warn "Mail not configured — Forgot Password emails will NOT be sent."
+  warn "To enable later: edit /var/www/organett/.env and set MAIL_MAILER=smtp with Gmail credentials."
+fi
 
 # Generate app key
 php8.4 artisan key:generate --force
@@ -286,6 +312,14 @@ echo ""
 echo -e "  ${Y}Default logins:${N}"
 echo -e "    Admin  →  admin@organett.local  /  admin123"
 echo -e "    Staff  →  staff@organett.local  /  staff123"
+echo ""
+if [ -n "$MAIL_USERNAME" ] && [ -n "$MAIL_PASSWORD" ]; then
+echo -e "  ${G}Mail:${N}         Gmail SMTP enabled (${MAIL_USERNAME})"
+echo -e "                Forgot Password emails will be sent."
+else
+echo -e "  ${Y}Mail:${N}         Not configured — Forgot Password emails are disabled."
+echo -e "                To enable: set MAIL_* in ${APP_DIR}/.env"
+fi
 echo ""
 echo -e "  ${B}To deploy future updates, run:${N}"
 echo -e "    bash ${APP_DIR}/update.sh"
