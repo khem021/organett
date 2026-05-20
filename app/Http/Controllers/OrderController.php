@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\Order;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -53,7 +54,10 @@ class OrderController extends Controller
         $data['total_amount'] = $data['quantity_kg'] * $data['unit_price'];
         $data['order_no']     = 'ORD-' . now()->year . '-' . str_pad(Order::count() + 1, 3, '0', STR_PAD_LEFT);
 
-        Order::create($data);
+        $order = Order::create($data);
+        $order->load('customer');
+
+        ActivityLogger::log('Orders', 'create', "Created order {$order->order_no} for {$order->customer?->customer_name}");
 
         return redirect()->route('orders.index')->with('success', 'Order created.');
     }
@@ -72,7 +76,22 @@ class OrderController extends Controller
         ]);
         $order->update($data);
 
+        ActivityLogger::log('Orders', 'update', "Updated {$order->order_no} — status: {$data['order_status']}, payment: {$data['payment_status']}");
+
         return redirect()->back()->with('success', 'Order status updated.');
+    }
+
+    public function cancel(Order $order)
+    {
+        if (in_array($order->order_status, ['completed', 'cancelled'])) {
+            return redirect()->back()->with('error', 'Cannot cancel a completed or already cancelled order.');
+        }
+
+        $order->update(['order_status' => 'cancelled']);
+
+        ActivityLogger::log('Orders', 'cancel', "Cancelled order {$order->order_no}");
+
+        return redirect()->back()->with('success', "Order {$order->order_no} has been cancelled.");
     }
 
     public function updateDelivery(Request $request, Order $order)
@@ -88,6 +107,8 @@ class OrderController extends Controller
 
         Delivery::updateOrCreate(['order_id' => $order->id], $data);
 
+        ActivityLogger::log('Orders', 'delivery', "Updated delivery info for order {$order->order_no}");
+
         return redirect()->back()->with('success', 'Delivery info updated.');
     }
 
@@ -102,10 +123,12 @@ class OrderController extends Controller
 
     public function destroy(Order $order)
     {
-        // Delete child records first to satisfy FK constraints
+        $orderNo = $order->order_no;
         $order->delivery?->delete();
         $order->sales()->delete();
         $order->delete();
+
+        ActivityLogger::log('Orders', 'delete', "Deleted order {$orderNo}");
 
         return redirect()->route('orders.index')->with('success', 'Order deleted.');
     }

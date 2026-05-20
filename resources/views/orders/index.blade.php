@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('title','Orders')
 @section('page-title','Orders')
+@section('page-step','5')
 
 @section('content')
 <div class="page-header">
@@ -82,6 +83,12 @@
                 <td style="font-size:.75rem;">{{ $order->delivery_date->format('M d, Y') }}</td>
                 <td style="white-space:nowrap;">
                     <a href="{{ route('orders.show', $order) }}" class="btn-sm btn-sm-blue">View</a>
+                    @if(!in_array($order->order_status, ['cancelled','completed']))
+                    <form method="POST" action="{{ route('orders.cancel', $order) }}" style="display:inline" onsubmit="return true">
+                        @csrf @method('PATCH')
+                        <button type="submit" class="btn-sm btn-sm-yellow">Cancel</button>
+                    </form>
+                    @endif
                     <form method="POST" action="{{ route('orders.destroy', $order) }}" style="display:inline" onsubmit="return true">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn-sm btn-sm-red">Del</button>

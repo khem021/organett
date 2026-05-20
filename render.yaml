@@ -1,0 +1,62 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Deploy with: connect this repo on render.com → "New Blueprint"
+
+databases:
+  - name: organett-db
+    databaseName: organett
+    user: organett
+    plan: free          # Free 90-day trial; upgrade to Starter ($7/mo) after
+
+services:
+  - type: web
+    name: organett
+    runtime: docker
+    plan: free          # Free plan sleeps after 15 min inactivity; use Starter for always-on
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /login
+
+    envVars:
+      # ── Application ─────────────────────────────────────────────────────────
+      - key: APP_NAME
+        value: Organett
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+
+      # APP_KEY: generate with `php artisan key:generate --show` and paste here
+      # Format: base64:AbCdEfGhIj...  (44 characters after "base64:")
+      - key: APP_KEY
+        sync: false     # ← Set this manually in the Render dashboard!
+
+      # APP_URL: set to your Render URL after first deploy (e.g. https://organett.onrender.com)
+      - key: APP_URL
+        sync: false     # ← Set this manually in the Render dashboard!
+
+      # ── Database ─────────────────────────────────────────────────────────────
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: organett-db
+          property: connectionString
+
+      # ── Session / Cache / Queue ───────────────────────────────────────────────
+      - key: SESSION_DRIVER
+        value: database   # sessions table created by migration
+      - key: CACHE_STORE
+        value: file       # file cache — no extra migration required
+      - key: QUEUE_CONNECTION
+        value: sync       # synchronous — no worker process required
+
+      # ── Logging ──────────────────────────────────────────────────────────────
+      - key: LOG_CHANNEL
+        value: stderr     # Render captures stderr as structured logs
+      - key: LOG_LEVEL
+        value: error
+
+      # ── Misc ─────────────────────────────────────────────────────────────────
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: BCRYPT_ROUNDS
+        value: "10"       # Slightly faster hashing on constrained free-tier CPU

@@ -190,9 +190,11 @@
             border: none;
             color: var(--text-dim);
             cursor: pointer;
-            padding: 0.25rem;
+            padding: 0.25rem 0.375rem;
             border-radius: 0.375rem;
             display: flex;
+            align-items: center;
+            gap: 0.3rem;
             transition: color .15s;
         }
         .logout-btn:hover { color: var(--danger); }
@@ -640,6 +642,123 @@
         @media (min-width: 900px) {
             .topbar-shortcut-label { display: inline !important; }
         }
+
+        /* ── Table horizontal scroll ── */
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* ── Mobile-first enhancements (≤ 768px) ── */
+        @media (max-width: 768px) {
+
+            /* Prevent iOS Safari auto-zoom on input focus */
+            .form-input, .form-select, .form-textarea,
+            .filter-input, .filter-select,
+            input[type="email"], input[type="password"],
+            input[type="text"], input[type="number"],
+            input[type="date"], select, textarea {
+                font-size: 16px !important;
+            }
+
+            /* Bottom-sheet modals — slide up from bottom, fully scrollable */
+            dialog {
+                position: fixed !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: 92dvh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                top: auto !important;
+                transform: none !important;
+                margin: 0 !important;
+                border-radius: 1.25rem 1.25rem 0 0;
+                padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+            }
+            dialog::backdrop {
+                background: rgba(0,0,0,.8);
+            }
+
+            /* Touch-friendly tap targets */
+            .btn-primary, .btn-secondary {
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .btn-sm {
+                min-height: 38px;
+                padding: .45rem .8rem;
+                font-size: .75rem;
+            }
+
+            /* Wrap page-header action buttons instead of overflowing */
+            .page-header-right {
+                flex-wrap: wrap;
+                gap: .375rem;
+            }
+
+            /* Reduce padding on stat cards to fit 2-column layout */
+            .stat-card { padding: .875rem .875rem; }
+            .stat-value { font-size: 1.375rem; }
+
+            /* Mobile-friendly form actions (stack on tiny screens) */
+            .form-actions { flex-wrap: wrap; }
+            .form-actions .btn-primary,
+            .form-actions .btn-secondary { flex: 1; min-width: 120px; }
+
+            /* Progress bar text: allow wrap */
+            .progress-label { flex-wrap: wrap; gap: .2rem; }
+        }
+
+        /* ── Extra small phones (≤ 480px) ── */
+        @media (max-width: 480px) {
+            .topbar { height: 48px; }
+            .page-content { padding: .875rem; }
+            .card { padding: 1rem; }
+            .modal-title { font-size: .9375rem; }
+            /* Stack filter bar fully */
+            .filter-bar button, .filter-bar a { flex: 1; text-align: center; }
+        }
+
+        /* ── Safe area insets for devices with home bar (iPhone X+) ── */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .main {
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+
+        /* ── Step number badge in sidebar nav ── */
+        .nav-step-num {
+            display:inline-flex; align-items:center; justify-content:center;
+            width:1.125rem; height:1.125rem;
+            border-radius:50%;
+            background:var(--green-mid);
+            color:var(--green-light);
+            font-size:.5625rem; font-weight:700;
+            flex-shrink:0;
+            border:1px solid #1a4c2e;
+            letter-spacing:0;
+        }
+        .nav-item.active .nav-step-num {
+            background:var(--green-accent); color:#fff; border-color:var(--green-accent);
+        }
+
+        /* ── Step pill shown in the topbar title ── */
+        .step-pill {
+            display:inline-flex; align-items:center;
+            font-size:.6rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+            color:var(--green-accent);
+            background:#16a34a12; border:1px solid #16a34a28;
+            border-radius:999px; padding:.1rem .5rem;
+            margin-left:.5rem; vertical-align:middle;
+        }
+
+        /* ── Logout text label ── */
+        .logout-text { font-size:.6875rem; font-weight:500; white-space:nowrap; }
     </style>
     @stack('styles')
 </head>
@@ -665,7 +784,10 @@
                 Dashboard
             </a>
 
+            <div class="nav-section" style="margin-top:.5rem;">Production <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.65;">· Steps 1–2</span></div>
+
             <a href="{{ route('batches.index') }}" class="nav-item {{ request()->routeIs('batches*') ? 'active' : '' }}">
+                <span class="nav-step-num">1</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="12 2 2 7 12 12 22 7 12 2"/>
                     <polyline points="2 17 12 22 22 17"/>
@@ -675,6 +797,7 @@
             </a>
 
             <a href="{{ route('harvest.index') }}" class="nav-item {{ request()->routeIs('harvest*') ? 'active' : '' }}">
+                <span class="nav-step-num">2</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
@@ -685,9 +808,10 @@
                 Harvest Logs
             </a>
 
-            <div class="nav-section">Operations</div>
+            <div class="nav-section" style="margin-top:.5rem;">Operations <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.65;">· Steps 3–5</span></div>
 
             <a href="{{ route('inventory.index') }}" class="nav-item {{ request()->routeIs('inventory*') ? 'active' : '' }}">
+                <span class="nav-step-num">3</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                 </svg>
@@ -698,6 +822,7 @@
             </a>
 
             <a href="{{ route('customers.index') }}" class="nav-item {{ request()->routeIs('customers*') ? 'active' : '' }}">
+                <span class="nav-step-num">4</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
@@ -706,6 +831,7 @@
             </a>
 
             <a href="{{ route('orders.index') }}" class="nav-item {{ request()->routeIs('orders*') ? 'active' : '' }}">
+                <span class="nav-step-num">5</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="1" y="3" width="15" height="13"/>
                     <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
@@ -718,9 +844,10 @@
                 @endif
             </a>
 
-            <div class="nav-section">Analytics</div>
+            <div class="nav-section" style="margin-top:.5rem;">Analytics <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.65;">· Step 6</span></div>
 
             <a href="{{ route('reports') }}" class="nav-item {{ request()->routeIs('reports*') ? 'active' : '' }}">
+                <span class="nav-step-num">6</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="20" x2="18" y2="10"/>
                     <line x1="12" y1="20" x2="12" y2="4"/>
@@ -766,12 +893,13 @@
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="logout-btn" title="Log out">
+                    <button type="submit" class="logout-btn" title="Sign out of Organett">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <polyline points="16 17 21 12 16 7"/>
                             <line x1="21" y1="12" x2="9" y2="12"/>
                         </svg>
+                        <span class="logout-text">Sign out</span>
                     </button>
                 </form>
             </div>
@@ -786,7 +914,7 @@
                     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
                 </svg>
             </button>
-            <span class="topbar-title">@yield('page-title', 'Dashboard')</span>
+            <span class="topbar-title">@yield('page-title', 'Dashboard')@if(View::hasSection('page-step')) <span class="step-pill">Step @yield('page-step') of 6</span>@endif</span>
             <div class="topbar-right">
                 <button onclick="document.getElementById('shortcutsDialog').showModal()"
                         title="Keyboard shortcuts"
@@ -860,8 +988,9 @@
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const bd = document.getElementById('sidebarBackdrop');
-            sb.classList.toggle('open');
-            bd.classList.toggle('show');
+            const isOpen = sb.classList.toggle('open');
+            bd.classList.toggle('show', isOpen);
+            document.body.style.overflow = isOpen ? 'hidden' : '';
         }
         // Close mobile sidebar when a nav link is tapped
         document.querySelectorAll('.sidebar .nav-item').forEach(el => {
@@ -869,6 +998,7 @@
                 if (window.innerWidth <= 768) {
                     document.getElementById('sidebar').classList.remove('open');
                     document.getElementById('sidebarBackdrop').classList.remove('show');
+                    document.body.style.overflow = '';
                 }
             });
         });
@@ -962,6 +1092,15 @@
             if (window.scrollY > 320) scrollBtn.classList.add('show');
             else scrollBtn.classList.remove('show');
         }, { passive: true });
+
+        // ── Wrap all tables in horizontal-scroll containers ────────────────────
+        document.querySelectorAll('.card table, .card .table-scroll table').forEach(t => {
+            if (t.closest('.table-scroll')) return;
+            const w = document.createElement('div');
+            w.className = 'table-scroll';
+            t.parentNode.insertBefore(w, t);
+            w.appendChild(t);
+        });
 
         // ── Keyboard shortcuts (g+key for navigation) ───────────────────────
         const navMap = {

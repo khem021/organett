@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductionBatch extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'batch_code', 'substrate_type', 'spawn_type',
         'inoculation_date', 'expected_harvest_date',

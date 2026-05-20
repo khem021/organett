@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProductionBatch;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,7 +36,9 @@ class BatchController extends Controller
             'notes'                => 'nullable|string',
         ]);
         $data['created_by'] = Auth::id();
-        ProductionBatch::create($data);
+        $batch = ProductionBatch::create($data);
+
+        ActivityLogger::log('Batches', 'create', "Created batch {$batch->batch_code}");
 
         return redirect()->route('batches.index')->with('success', 'Batch created successfully.');
     }
@@ -58,12 +61,18 @@ class BatchController extends Controller
         ]);
         $batch->update($data);
 
+        ActivityLogger::log('Batches', 'update', "Updated batch {$batch->batch_code} — status: {$batch->status}");
+
         return redirect()->route('batches.show', $batch)->with('success', 'Batch updated.');
     }
 
     public function destroy(ProductionBatch $batch)
     {
+        $code = $batch->batch_code;
         $batch->delete();
+
+        ActivityLogger::log('Batches', 'delete', "Deleted batch {$code}");
+
         return redirect()->route('batches.index')->with('success', 'Batch deleted.');
     }
 }

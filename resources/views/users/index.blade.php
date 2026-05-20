@@ -175,7 +175,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-input" placeholder="Min. 6 characters" required>
+                <input type="password" name="password" class="form-input" placeholder="Min. 8 chars, letters + numbers" required>
             </div>
             <div class="form-group">
                 <label class="form-label">Confirm Password</label>

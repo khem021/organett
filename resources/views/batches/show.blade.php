@@ -89,9 +89,9 @@
 {{-- Grade distribution bar --}}
 @if($totalKg > 0)
 <div class="card" style="margin-bottom:1rem;padding:.875rem 1.25rem;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.625rem;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.625rem;">
         <span style="font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);">Grade Distribution</span>
-        <div style="display:flex;gap:1rem;font-size:.75rem;color:var(--text-muted);">
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem 1rem;font-size:.75rem;color:var(--text-muted);">
             <span style="color:var(--green-light);">■ Grade A {{ number_format(($gradeA/$totalKg)*100,1) }}%</span>
             <span style="color:var(--warning);">■ Grade B {{ number_format(($gradeB/$totalKg)*100,1) }}%</span>
             <span style="color:var(--danger);">■ Grade C {{ number_format(($gradeC/$totalKg)*100,1) }}%</span>

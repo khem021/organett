@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -31,12 +32,14 @@ class CustomerController extends Controller
         $data = $request->validate([
             'customer_name'  => 'required|string|max:150',
             'contact_person' => 'nullable|string|max:150',
-            'phone'          => 'required|string|max:50',
+            'phone'          => ['required', 'string', 'max:50', 'regex:/^[\d\s\+\-\(\)]+$/'],
             'email'          => 'nullable|email|max:150',
             'address'        => 'required|string',
         ]);
 
-        Customer::create($data);
+        $customer = Customer::create($data);
+
+        ActivityLogger::log('Customers', 'create', "Added customer: {$customer->customer_name}");
 
         return redirect()->route('customers.index')->with('success', 'Customer added successfully.');
     }
@@ -46,12 +49,14 @@ class CustomerController extends Controller
         $data = $request->validate([
             'customer_name'  => 'required|string|max:150',
             'contact_person' => 'nullable|string|max:150',
-            'phone'          => 'required|string|max:50',
+            'phone'          => ['required', 'string', 'max:50', 'regex:/^[\d\s\+\-\(\)]+$/'],
             'email'          => 'nullable|email|max:150',
             'address'        => 'required|string',
         ]);
 
         $customer->update($data);
+
+        ActivityLogger::log('Customers', 'update', "Updated customer: {$customer->customer_name}");
 
         return redirect()->route('customers.index')->with('success', 'Customer updated.');
     }
@@ -63,7 +68,10 @@ class CustomerController extends Controller
                 ->with('error', 'Cannot delete customer with existing orders.');
         }
 
+        $name = $customer->customer_name;
         $customer->delete();
+
+        ActivityLogger::log('Customers', 'delete', "Deleted customer: {$name}");
 
         return redirect()->route('customers.index')->with('success', 'Customer deleted.');
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Sale;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class SaleController extends Controller
@@ -14,7 +15,7 @@ class SaleController extends Controller
             'sale_date'      => 'required|date',
             'quantity_kg'    => 'required|numeric|min:0.01',
             'amount'         => 'required|numeric|min:0.01',
-            'payment_method' => 'required|string|max:100',
+            'payment_method' => 'required|in:Cash,GCash,Maya,Bank Transfer,Cheque,Other',
             'remarks'        => 'nullable|string',
         ]);
 
@@ -22,9 +23,13 @@ class SaleController extends Controller
         $data['customer_id'] = $order->customer_id;
 
         Sale::create($data);
-
-        // Auto-update payment_status based on total paid
         $this->syncPaymentStatus($order);
+
+        ActivityLogger::log(
+            'Sales',
+            'create',
+            "Recorded ₱" . number_format($data['amount'], 2) . " payment via {$data['payment_method']} for order {$order->order_no}"
+        );
 
         return redirect()->route('orders.show', $order)
             ->with('success', 'Payment recorded successfully.');
@@ -32,8 +37,11 @@ class SaleController extends Controller
 
     public function destroy(Order $order, Sale $sale)
     {
+        $amount = $sale->amount;
         $sale->delete();
         $this->syncPaymentStatus($order);
+
+        ActivityLogger::log('Sales', 'delete', "Deleted ₱" . number_format($amount, 2) . " payment record from order {$order->order_no}");
 
         return redirect()->route('orders.show', $order)
             ->with('success', 'Payment record deleted.');

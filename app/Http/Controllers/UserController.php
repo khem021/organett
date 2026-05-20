@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -23,7 +25,7 @@ class UserController extends Controller
             'full_name'     => 'required|string|max:150',
             'username'      => 'required|string|max:80|unique:users|alpha_dash',
             'email'         => 'required|email|unique:users',
-            'password'      => 'required|string|min:6|confirmed',
+            'password'      => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
             'role'          => 'required|in:admin,staff',
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -43,6 +45,8 @@ class UserController extends Controller
 
         User::create($data);
 
+        ActivityLogger::log('Users', 'create', "Created user: {$request->username} ({$request->role})");
+
         return back()->with('success', "User '{$request->full_name}' created successfully.");
     }
 
@@ -52,11 +56,10 @@ class UserController extends Controller
             'full_name'     => 'required|string|max:150',
             'role'          => 'required|in:admin,staff',
             'status'        => 'required|in:active,inactive',
-            'password'      => 'nullable|string|min:6|confirmed',
+            'password'      => ['nullable', 'confirmed', Password::min(8)->mixedCase()->numbers()],
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        // Prevent admin from demoting or deactivating themselves
         if ($user->id === Auth::id()) {
             if ($request->role !== 'admin') {
                 return back()->with('error', 'You cannot change your own role.');
@@ -77,7 +80,6 @@ class UserController extends Controller
         }
 
         if ($request->hasFile('profile_photo')) {
-            // Delete old photo if exists
             if ($user->profile_photo) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
@@ -85,6 +87,9 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        ActivityLogger::log('Users', 'update', "Updated user: {$user->username} — role: {$user->role}, status: {$user->status}");
+
         return back()->with('success', "User '{$user->full_name}' updated.");
     }
 
@@ -94,13 +99,16 @@ class UserController extends Controller
             return back()->with('error', 'You cannot delete your own account.');
         }
 
-        // Delete photo from storage
         if ($user->profile_photo) {
             Storage::disk('public')->delete($user->profile_photo);
         }
 
-        $name = $user->full_name;
+        $name     = $user->full_name;
+        $username = $user->username;
         $user->delete();
+
+        ActivityLogger::log('Users', 'delete', "Deleted user: {$username} ({$name})");
+
         return back()->with('success', "User '{$name}' deleted.");
     }
 }

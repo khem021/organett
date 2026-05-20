@@ -8,15 +8,31 @@
         <h2>{{ $order->order_no }}</h2>
         <p>Placed {{ $order->order_date->format('M d, Y') }} · {{ $order->customer?->customer_name ?? '—' }}</p>
     </div>
-    <div class="page-header-right">
+    <div class="order-actions">
         <a href="{{ route('orders.index') }}" class="btn-secondary" style="font-size:.875rem;padding:.45rem .9rem;">← Back</a>
-        <a href="{{ route('orders.print', $order) }}" target="_blank" class="btn-secondary" style="font-size:.875rem;padding:.45rem .9rem;">🖨 Print</a>
-        <button class="btn-primary" style="padding:.5rem 1rem;font-size:.875rem;" onclick="document.getElementById('record-payment').showModal()">+ Record Payment</button>
-        <button class="btn-primary" style="padding:.5rem 1rem;font-size:.875rem;" onclick="document.getElementById('update-status').showModal()">Update Status</button>
+        <a href="{{ route('orders.print', $order) }}" target="_blank" class="btn-secondary" style="font-size:.875rem;padding:.45rem .9rem;">Print</a>
+        <button class="btn-primary" style="padding:.5rem 1rem;font-size:.875rem;" onclick="document.getElementById('record-payment').showModal()">+ Payment</button>
+        <button class="btn-primary" style="padding:.5rem 1rem;font-size:.875rem;" onclick="document.getElementById('update-status').showModal()">Status</button>
+        @if(!in_array($order->order_status, ['cancelled','completed']))
+        <form method="POST" action="{{ route('orders.cancel', $order) }}" style="display:inline">
+            @csrf @method('PATCH')
+            <button type="submit" class="btn-secondary" style="padding:.5rem 1rem;font-size:.875rem;color:var(--warning);border-color:#78350f55;">Cancel</button>
+        </form>
+        @endif
         <button class="btn-primary" style="padding:.5rem 1rem;font-size:.875rem;" onclick="document.getElementById('update-delivery').showModal()">
-            {{ $order->delivery ? 'Edit Delivery' : '+ Add Delivery' }}
+            {{ $order->delivery ? 'Delivery' : '+ Delivery' }}
         </button>
     </div>
+
+    @push('styles')
+    <style>
+    .order-actions { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+    @media (max-width: 640px) {
+        .order-actions { overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; padding-bottom:.25rem; width:100%; }
+        .order-actions > * { flex-shrink:0; }
+    }
+    </style>
+    @endpush
 </div>
 
 {{-- Payment progress bar --}}

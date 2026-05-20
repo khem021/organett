@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Inventory;
 use App\Models\InventoryTransaction;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,7 +42,9 @@ class InventoryController extends Controller
             'reorder_level' => 'required|numeric|min:0',
             'location'      => 'nullable|string|max:150',
         ]);
-        Inventory::create($data);
+        $item = Inventory::create($data);
+
+        ActivityLogger::log('Inventory', 'create', "Added inventory item: {$item->item_name} ({$item->stock_qty} {$item->unit})");
 
         return redirect()->route('inventory.index')->with('success', 'Item added to inventory.');
     }
@@ -72,12 +75,22 @@ class InventoryController extends Controller
             : $inventory->stock_qty - $data['quantity'];
         $inventory->save();
 
+        ActivityLogger::log(
+            'Inventory',
+            'adjust',
+            "Stock {$data['transaction_type']}: {$data['quantity']} {$inventory->unit} of {$inventory->item_name} (new qty: {$inventory->stock_qty})"
+        );
+
         return redirect()->route('inventory.index')->with('success', 'Stock adjusted.');
     }
 
     public function destroy(Inventory $inventory)
     {
+        $name = $inventory->item_name;
         $inventory->delete();
+
+        ActivityLogger::log('Inventory', 'delete', "Removed inventory item: {$name}");
+
         return redirect()->route('inventory.index')->with('success', 'Item removed.');
     }
 }

@@ -13,9 +13,15 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust all proxies so HTTPS URLs are generated correctly behind
+        // Render's (and any other) load balancer / reverse proxy.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
+        // Kick deactivated users out on every web request
+        $middleware->appendToGroup('web', \App\Http\Middleware\CheckActiveUser::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

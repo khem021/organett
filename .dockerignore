@@ -1,0 +1,39 @@
+# Secrets — never bake into the image
+.env
+.env.*
+!.env.example
+
+# Dependencies — installed inside the container
+vendor/
+node_modules/
+
+# Build artefacts — generated inside the container
+public/build/
+public/hot
+
+# Runtime storage — not needed at build time
+storage/logs/*.log
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+
+# Git history
+.git/
+.gitignore
+.gitattributes
+
+# Test suite
+tests/
+phpunit.xml
+.phpunit.*
+
+# IDE / OS clutter
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db
+
+# Previous platform config (not needed for Render)
+nixpacks.toml

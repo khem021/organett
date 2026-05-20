@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\HarvestRecord;
 use App\Models\ProductionBatch;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,14 +39,26 @@ class HarvestController extends Controller
             'notes'         => 'nullable|string',
         ]);
         $data['created_by'] = Auth::id();
-        HarvestRecord::create($data);
+        $record = HarvestRecord::create($data);
+        $record->load('batch');
+
+        ActivityLogger::log(
+            'Harvest',
+            'create',
+            "Logged {$record->quantity_kg}kg Grade-{$record->quality_grade} harvest for batch {$record->batch->batch_code}"
+        );
 
         return redirect()->route('harvest.index')->with('success', 'Harvest record logged.');
     }
 
     public function destroy(HarvestRecord $harvest)
     {
+        $harvest->load('batch');
+        $desc = "Deleted harvest record #{$harvest->id} from batch {$harvest->batch?->batch_code}";
         $harvest->delete();
+
+        ActivityLogger::log('Harvest', 'delete', $desc);
+
         return redirect()->route('harvest.index')->with('success', 'Record deleted.');
     }
 }

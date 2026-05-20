@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -17,7 +18,7 @@ class LoginController extends Controller
     public function store(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'email'    => ['required', 'email'],
             'password' => ['required'],
         ]);
 
@@ -27,7 +28,6 @@ class LoginController extends Controller
             ]);
         }
 
-        // Block inactive accounts even if credentials are correct
         if (Auth::user()->status !== 'active') {
             Auth::logout();
             throw ValidationException::withMessages([
@@ -37,13 +37,16 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        ActivityLogger::log('Auth', 'login', "Logged in from IP: {$request->ip()}");
+
         return redirect()->intended('/dashboard');
     }
 
     public function destroy(Request $request)
     {
-        Auth::logout();
+        ActivityLogger::log('Auth', 'logout', 'Logged out');
 
+        Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

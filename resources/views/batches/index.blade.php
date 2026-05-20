@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('title','Batches')
 @section('page-title','Production Batches')
+@section('page-step','1')
 
 @section('content')
 <div class="page-header">
