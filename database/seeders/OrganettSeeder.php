@@ -104,24 +104,5 @@ class OrganettSeeder extends Seeder
             ['user_id' => 1, 'module' => 'Sales', 'action' => 'Create', 'description' => 'Added a sale worth PHP 630.00.', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // ── PostgreSQL: reset auto-increment sequences after explicit ID inserts ──
-        // Without this, the next INSERT would try ID 1 again and fail.
-        if (DB::getDriverName() === 'pgsql') {
-            $tables = [
-                'users',
-                'inventory',
-                'production_batches',
-                'harvest_records',
-                'customers',
-                'orders',
-                'deliveries',
-                'sales',
-            ];
-            foreach ($tables as $table) {
-                DB::statement(
-                    "SELECT setval(pg_get_serial_sequence('{$table}', 'id'), MAX(id)) FROM {$table}"
-                );
-            }
-        }
     }
 }

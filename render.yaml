@@ -5,7 +5,7 @@ databases:
   - name: organett-db
     databaseName: organett
     user: organett
-    plan: free          # Free 90-day trial; upgrade to Starter ($7/mo) after
+    plan: starter       # $7/month — change to "free" if you deleted your existing free DB
 
 services:
   - type: web
