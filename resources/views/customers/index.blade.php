@@ -30,11 +30,17 @@
 {{-- Table --}}
 <div class="card">
     @if($customers->isEmpty())
-        <div class="empty-state">
+        <div class="empty-state-full">
+            <div class="empty-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
             @if(request('search'))
-                No customers match "{{ request('search') }}".
+                <p>No customers match "{{ request('search') }}".</p>
+                <a href="{{ route('customers.index') }}" class="btn-secondary">Clear search</a>
             @else
-                No customers yet. Add your first customer to get started.
+                <p>No customers yet.</p>
+                <small>Add the businesses or individuals you sell mushrooms to.</small>
+                <button class="btn-primary" onclick="document.getElementById('create-customer').showModal()">+ Add Customer</button>
             @endif
         </div>
     @else
@@ -80,12 +86,12 @@
                         )">Edit</button>
                     @if($customer->orders_count === 0)
                     <form method="POST" action="{{ route('customers.destroy', $customer) }}" style="display:inline"
-                          onsubmit="return true">
+                          data-confirm="Delete customer &ldquo;{{ $customer->customer_name }}&rdquo;?">
                         @csrf @method('DELETE')
-                        <button type="submit" class="btn-sm btn-sm-red">Del</button>
+                        <button type="submit" class="btn-sm btn-sm-red">Delete</button>
                     </form>
                     @else
-                    <span class="btn-sm" style="color:var(--text-dim);cursor:default;" title="Has orders — cannot delete">Del</span>
+                    <span class="btn-sm" style="color:var(--text-dim);cursor:not-allowed;opacity:.5;" title="Cannot delete — has {{ $customer->orders_count }} order(s)">Delete</span>
                     @endif
                 </td>
             </tr>
@@ -106,25 +112,30 @@
         @csrf
         <div class="form-group">
             <label class="form-label">Customer / Business Name <span style="color:var(--danger);">*</span></label>
-            <input type="text" name="customer_name" class="form-input" placeholder="e.g. Jollibee - SM Branch" required maxlength="150">
+            <input type="text" name="customer_name" class="form-input" value="{{ old('customer_name') }}" placeholder="e.g. Jollibee - SM Branch" required maxlength="150">
+            @error('customer_name') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label">Contact Person</label>
-                <input type="text" name="contact_person" class="form-input" placeholder="Full name" maxlength="150">
+                <input type="text" name="contact_person" class="form-input" value="{{ old('contact_person') }}" placeholder="Full name" maxlength="150">
+                @error('contact_person') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Phone <span style="color:var(--danger);">*</span></label>
-                <input type="text" name="phone" class="form-input" placeholder="+63 9xx xxx xxxx" required maxlength="50">
+                <input type="text" name="phone" class="form-input" value="{{ old('phone') }}" placeholder="+63 9xx xxx xxxx" required maxlength="50">
+                @error('phone') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
         <div class="form-group">
             <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-input" placeholder="orders@example.com" maxlength="150">
+            <input type="email" name="email" class="form-input" value="{{ old('email') }}" placeholder="orders@example.com" maxlength="150">
+            @error('email') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-group">
             <label class="form-label">Address <span style="color:var(--danger);">*</span></label>
-            <textarea name="address" class="form-textarea" placeholder="Street, Barangay, City, Province" required></textarea>
+            <textarea name="address" class="form-textarea" placeholder="Street, Barangay, City, Province" required>{{ old('address') }}</textarea>
+            @error('address') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-actions">
             <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
@@ -139,29 +150,35 @@
         Edit Customer
         <button class="modal-close" onclick="this.closest('dialog').close()">×</button>
     </div>
-    <form method="POST" id="edit-form" action="">
+    <form method="POST" id="edit-form" action="{{ old('_edit_id') ? route('customers.update', old('_edit_id')) : '' }}">
         @csrf @method('PUT')
+        <input type="hidden" name="_edit_id" id="edit-id-field" value="{{ old('_edit_id') }}">
         <div class="form-group">
             <label class="form-label">Customer / Business Name <span style="color:var(--danger);">*</span></label>
-            <input type="text" name="customer_name" id="edit-name" class="form-input" required maxlength="150">
+            <input type="text" name="customer_name" id="edit-name" class="form-input" value="{{ old('customer_name') }}" required maxlength="150">
+            @error('customer_name') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label">Contact Person</label>
-                <input type="text" name="contact_person" id="edit-contact" class="form-input" maxlength="150">
+                <input type="text" name="contact_person" id="edit-contact" class="form-input" value="{{ old('contact_person') }}" maxlength="150">
+                @error('contact_person') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Phone <span style="color:var(--danger);">*</span></label>
-                <input type="text" name="phone" id="edit-phone" class="form-input" required maxlength="50">
+                <input type="text" name="phone" id="edit-phone" class="form-input" value="{{ old('phone') }}" required maxlength="50">
+                @error('phone') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
         <div class="form-group">
             <label class="form-label">Email</label>
-            <input type="email" name="email" id="edit-email" class="form-input" maxlength="150">
+            <input type="email" name="email" id="edit-email" class="form-input" value="{{ old('email') }}" maxlength="150">
+            @error('email') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-group">
             <label class="form-label">Address <span style="color:var(--danger);">*</span></label>
-            <textarea name="address" id="edit-address" class="form-textarea" required></textarea>
+            <textarea name="address" id="edit-address" class="form-textarea" required>{{ old('address') }}</textarea>
+            @error('address') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-actions">
             <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
@@ -173,6 +190,7 @@
 <script>
 function openEdit(id, name, contact, phone, email, address) {
     document.getElementById('edit-form').action = '/customers/' + id;
+    document.getElementById('edit-id-field').value = id;
     document.getElementById('edit-name').value    = name;
     document.getElementById('edit-contact').value = contact;
     document.getElementById('edit-phone').value   = phone;
@@ -183,7 +201,7 @@ function openEdit(id, name, contact, phone, email, address) {
 </script>
 
 @if($errors->any())
-<script>document.getElementById('create-customer').showModal();</script>
+<script>document.getElementById('{{ old('_edit_id') ? 'edit-customer' : 'create-customer' }}').showModal();</script>
 @endif
 
 @endsection

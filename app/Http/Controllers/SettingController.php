@@ -23,7 +23,7 @@ class SettingController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'farm_name'    => 'required|string|max:150',
+            'farm_name' => 'required|string|max:150',
             'farm_address' => 'nullable|string|max:255',
             'farm_contact' => 'nullable|string|max:50',
         ]);
@@ -37,7 +37,7 @@ class SettingController extends Controller
         }
 
         // Export periods — store as JSON array of checked values
-        $allowed  = ['daily', 'weekly', 'monthly', 'yearly'];
+        $allowed = ['daily', 'weekly', 'monthly', 'yearly'];
         $selected = array_values(array_intersect($request->input('export_periods', []), $allowed));
 
         // Always keep at least one period enabled
@@ -49,6 +49,8 @@ class SettingController extends Controller
             ['setting_key' => 'export_periods'],
             ['setting_value' => json_encode($selected), 'description' => 'Enabled income export periods']
         );
+
+        Setting::flushCache();
 
         return back()->with('success', 'Settings saved successfully.');
     }

@@ -172,6 +172,54 @@
             color: #fff;
             flex-shrink: 0;
         }
+
+        /* Avatars & photo upload (used on the Users page) */
+        .avatar-circle {
+            width: 2rem; height: 2rem; border-radius: 50%;
+            object-fit: cover; flex-shrink: 0;
+            border: 1px solid var(--card-border);
+        }
+        .avatar-initials {
+            width: 2rem; height: 2rem; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .6875rem; font-weight: 700; color: #fff; flex-shrink: 0;
+        }
+        .photo-upload-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: .875rem;
+        }
+        .photo-preview {
+            width: 3.5rem; height: 3.5rem; border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--card-border);
+            background: var(--card-bg);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem; color: var(--text-muted);
+            overflow: hidden; flex-shrink: 0;
+        }
+        .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-upload-btn {
+            flex: 1;
+        }
+        .photo-upload-label {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .4375rem .875rem;
+            font-size: .8125rem; font-weight: 500; font-family: inherit;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px dashed var(--card-border);
+            border-radius: .5rem;
+            cursor: pointer;
+            transition: all .15s;
+            width: 100%;
+            justify-content: center;
+        }
+        .photo-upload-label:hover { border-color: var(--green-accent); color: var(--text); }
+        .photo-upload-label input { display: none; }
+        .photo-upload-hint { font-size: .7rem; color: var(--text-muted); margin-top: .25rem; text-align: center; }
+
         .user-info { flex: 1; min-width: 0; }
         .user-name {
             font-size: 0.8125rem;
@@ -422,6 +470,7 @@
         .form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--green-accent); }
         .form-select option { background:var(--card-bg); }
         .form-textarea { resize:vertical; min-height:70px; }
+        .field-error { display:block; margin-top:.3rem; font-size:.75rem; color:var(--danger); }
         .form-actions { display:flex; gap:.75rem; justify-content:flex-end; margin-top:1.25rem; padding-top:1.25rem; border-top:1px solid var(--card-border); }
         .btn-primary { padding:.5rem 1rem; font-size:.875rem; font-weight:600; font-family:inherit; color:#fff; background:linear-gradient(135deg,#14532d,#16a34a); border:none; border-radius:.5rem; cursor:pointer; transition:opacity .15s; }
         .btn-primary:hover { opacity:.88; }
@@ -620,6 +669,20 @@
         .scroll-top.show { display: inline-flex; animation: fadeIn .2s both; }
         @media (max-width: 480px) { .scroll-top { bottom: .875rem; right: .875rem; } }
 
+        /* ── Skip link ── */
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            z-index: 200;
+            background: var(--card-bg);
+            color: var(--text);
+            padding: .625rem 1rem;
+            border-radius: 0 0 .5rem 0;
+            border: 1px solid var(--card-border);
+        }
+        .skip-link:focus { left: 0; }
+
         /* ── Better focus states ── */
         button:focus-visible, a:focus-visible {
             outline: 2px solid var(--green-accent);
@@ -634,6 +697,49 @@
         /* ── Table row click affordance ── */
         tbody tr { transition: background .12s ease; }
         tbody tr:hover td:first-child { color: var(--green-light); }
+
+        /* ── Clickable rows ── */
+        tbody tr[data-href] { cursor: pointer; }
+        tbody tr[data-href]:hover td { background: #16a34a0c; }
+
+        /* ── Clickable stat cards ── */
+        a.stat-card { text-decoration: none; color: inherit; }
+        a.stat-card:hover { border-color: var(--green-accent); transform: translateY(-2px); }
+
+        /* ── Quick action links (CSS, no inline handlers) ── */
+        .quick-action {
+            display: flex; align-items: center; gap: .625rem;
+            padding: .625rem .75rem; border-radius: .5rem;
+            background: #0a1a0e; border: 1px solid var(--card-border);
+            text-decoration: none; color: var(--text);
+            font-size: .8125rem; font-weight: 500;
+            transition: border-color .15s, background .15s;
+        }
+        .quick-action:hover { border-color: var(--green-accent); background: #16a34a0d; color: var(--green-light); }
+        .quick-action svg { flex-shrink: 0; }
+
+        /* ── Active filter pill ── */
+        .filter-pill {
+            display: inline-flex; align-items: center; gap: .3rem;
+            font-size: .6875rem; font-weight: 600; padding: .2rem .6rem;
+            background: #14532d33; color: var(--green-light);
+            border: 1px solid #16a34a44; border-radius: 999px;
+        }
+        .filter-pill a { color: var(--text-muted); text-decoration: none; margin-left: .2rem; }
+        .filter-pill a:hover { color: var(--danger); }
+
+        /* ── Better empty state ── */
+        .empty-state-full {
+            display: flex; flex-direction: column; align-items: center;
+            gap: .875rem; padding: 3.5rem 1rem; text-align: center;
+        }
+        .empty-state-full .empty-icon {
+            width: 3rem; height: 3rem; border-radius: 50%;
+            background: var(--card-border); display: flex;
+            align-items: center; justify-content: center;
+        }
+        .empty-state-full p { font-size: .875rem; color: var(--text-muted); margin: 0; }
+        .empty-state-full small { font-size: .75rem; color: var(--text-dim); }
 
         /* ── Selection color ── */
         ::selection { background: var(--green-accent); color: #fff; }
@@ -764,6 +870,8 @@
 </head>
 <body>
 
+    <a href="#main-content" class="skip-link">Skip to content</a>
+
     <!-- Mobile sidebar backdrop -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
 
@@ -773,11 +881,24 @@
             <div class="brand-name">ORGANETT</div>
         </a>
 
-        <nav class="sidebar-nav">
+        <nav class="sidebar-nav" aria-label="Main navigation">
+            @if(Auth::check() && Auth::user()->role === 'super_admin')
+
+            <div class="nav-section">Platform Admin</div>
+
+            <a href="{{ route('admin.farms.index') }}" class="nav-item {{ request()->routeIs('admin.farms*') ? 'active' : '' }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                All Farms
+            </a>
+
+            @else
+
             <div class="nav-section">Main</div>
 
             <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
                     <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
                 </svg>
@@ -788,7 +909,7 @@
 
             <a href="{{ route('batches.index') }}" class="nav-item {{ request()->routeIs('batches*') ? 'active' : '' }}">
                 <span class="nav-step-num">1</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <polygon points="12 2 2 7 12 12 22 7 12 2"/>
                     <polyline points="2 17 12 22 22 17"/>
                     <polyline points="2 12 12 17 22 12"/>
@@ -798,7 +919,7 @@
 
             <a href="{{ route('harvest.index') }}" class="nav-item {{ request()->routeIs('harvest*') ? 'active' : '' }}">
                 <span class="nav-step-num">2</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
                     <line x1="16" y1="13" x2="8" y2="13"/>
@@ -812,7 +933,7 @@
 
             <a href="{{ route('inventory.index') }}" class="nav-item {{ request()->routeIs('inventory*') ? 'active' : '' }}">
                 <span class="nav-step-num">3</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                 </svg>
                 Inventory
@@ -823,7 +944,7 @@
 
             <a href="{{ route('customers.index') }}" class="nav-item {{ request()->routeIs('customers*') ? 'active' : '' }}">
                 <span class="nav-step-num">4</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
                 </svg>
@@ -832,7 +953,7 @@
 
             <a href="{{ route('orders.index') }}" class="nav-item {{ request()->routeIs('orders*') ? 'active' : '' }}">
                 <span class="nav-step-num">5</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <rect x="1" y="3" width="15" height="13"/>
                     <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
                     <circle cx="5.5" cy="18.5" r="2.5"/>
@@ -848,7 +969,7 @@
 
             <a href="{{ route('reports') }}" class="nav-item {{ request()->routeIs('reports*') ? 'active' : '' }}">
                 <span class="nav-step-num">6</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <line x1="18" y1="20" x2="18" y2="10"/>
                     <line x1="12" y1="20" x2="12" y2="4"/>
                     <line x1="6" y1="20" x2="6" y2="14"/>
@@ -856,11 +977,22 @@
                 Reports
             </a>
 
-            @if(Auth::check() && Auth::user()->role === 'admin')
+            @if(Auth::check() && in_array(Auth::user()->role, ['admin', 'farm_admin']))
             <div class="nav-section" style="margin-top:.5rem;">Admin</div>
 
+            <a href="{{ route('activity-logs.index') }}" class="nav-item {{ request()->routeIs('activity-logs*') ? 'active' : '' }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                Activity Log
+            </a>
+
             <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users*') ? 'active' : '' }}">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                     <circle cx="9" cy="7" r="4"/>
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -870,12 +1002,14 @@
             </a>
 
             <a href="{{ route('settings') }}" class="nav-item {{ request()->routeIs('settings*') ? 'active' : '' }}">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="12" cy="12" r="3"/>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                 </svg>
                 Settings
             </a>
+            @endif
+
             @endif
         </nav>
 
@@ -889,12 +1023,21 @@
                 @endif
                 <div class="user-info">
                     <div class="user-name">{{ Auth::user()->full_name ?? 'Admin' }}</div>
-                    <div class="user-role">{{ Auth::user()->role === 'admin' ? 'Administrator' : 'Farm Staff' }}</div>
+                    <div class="user-role">
+                        @php
+                            $roleLabel = match(Auth::user()->role) {
+                                'super_admin' => 'Platform Admin',
+                                'farm_admin', 'admin' => 'Farm Admin',
+                                default => 'Farm Staff',
+                            };
+                        @endphp
+                        {{ $roleLabel }}
+                    </div>
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="logout-btn" title="Sign out of Organett">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <polyline points="16 17 21 12 16 7"/>
                             <line x1="21" y1="12" x2="9" y2="12"/>
@@ -910,7 +1053,7 @@
     <div class="main">
         <header class="topbar">
             <button class="mobile-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
                 </svg>
             </button>
@@ -918,6 +1061,7 @@
             <div class="topbar-right">
                 <button onclick="document.getElementById('shortcutsDialog').showModal()"
                         title="Keyboard shortcuts"
+                        aria-label="Keyboard shortcuts"
                         style="background:none;border:1px solid var(--card-border);border-radius:.375rem;color:var(--text-muted);cursor:pointer;padding:.25rem .5rem;display:inline-flex;align-items:center;gap:.375rem;font-size:.6875rem;font-family:inherit;transition:border-color .15s,color .15s;"
                         onmouseover="this.style.borderColor='var(--green-accent)';this.style.color='var(--text)'"
                         onmouseout="this.style.borderColor='var(--card-border)';this.style.color='var(--text-muted)'">
@@ -931,7 +1075,7 @@
             </div>
         </header>
 
-        <div class="page-content">
+        <div class="page-content" id="main-content">
             @yield('content')
         </div>
     </div>
@@ -978,7 +1122,7 @@
 
     {{-- Scroll-to-top button --}}
     <button class="scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="18 15 12 9 6 15"/>
         </svg>
     </button>
@@ -1092,6 +1236,14 @@
             if (window.scrollY > 320) scrollBtn.classList.add('show');
             else scrollBtn.classList.remove('show');
         }, { passive: true });
+
+        // ── Clickable rows ──────────────────────────────────────────────────────
+        document.querySelectorAll('tbody tr[data-href]').forEach(row => {
+            row.addEventListener('click', e => {
+                if (e.target.closest('a, button, form, input, select, textarea')) return;
+                window.location.href = row.dataset.href;
+            });
+        });
 
         // ── Wrap all tables in horizontal-scroll containers ────────────────────
         document.querySelectorAll('.card table, .card .table-scroll table').forEach(t => {

@@ -27,15 +27,18 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Farm Name</label>
-                <input type="text" name="farm_name" class="form-input" value="{{ $settings->get('farm_name','') }}" required>
+                <input type="text" name="farm_name" class="form-input" value="{{ old('farm_name', $settings->get('farm_name','')) }}" required>
+                @error('farm_name') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Address</label>
-                <input type="text" name="farm_address" class="form-input" value="{{ $settings->get('farm_address','') }}" placeholder="City, Province, Philippines">
+                <input type="text" name="farm_address" class="form-input" value="{{ old('farm_address', $settings->get('farm_address','')) }}" placeholder="City, Province, Philippines">
+                @error('farm_address') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Contact Number</label>
-                <input type="text" name="farm_contact" class="form-input" value="{{ $settings->get('farm_contact','') }}" placeholder="+63 9xx xxx xxxx">
+                <input type="text" name="farm_contact" class="form-input" value="{{ old('farm_contact', $settings->get('farm_contact','')) }}" placeholder="+63 9xx xxx xxxx">
+                @error('farm_contact') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
 
@@ -56,6 +59,7 @@
                 'monthly' => ['Monthly', 'Last 12 months, one row per month'],
                 'yearly'  => ['Yearly',  'All-time, one row per year'],
             ];
+            $exportPeriods = old('export_periods', $exportPeriods);
             @endphp
 
             <div style="display:flex;flex-direction:column;gap:.625rem;">
@@ -133,11 +137,6 @@
 
         {{-- Save --}}
         <div style="display:flex;justify-content:flex-end;">
-            @if($errors->any())
-                @foreach($errors->all() as $e)
-                    <div class="flash flash-error" style="margin-right:auto;">{{ $e }}</div>
-                @endforeach
-            @endif
             <button type="submit" class="btn-primary" style="padding:.6rem 1.75rem;font-size:.9375rem;">Save All Settings</button>
         </div>
 

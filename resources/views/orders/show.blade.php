@@ -157,7 +157,7 @@
                         <td style="font-size:.75rem;color:var(--text-muted);max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $sale->remarks ?? '—' }}</td>
                         <td>
                             <form method="POST" action="{{ route('sales.destroy', [$order, $sale]) }}"
-                                  onsubmit="return true">
+                                  data-confirm="Delete this payment record of ₱{{ number_format($sale->amount,2) }}? This cannot be undone.">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn-sm btn-sm-red">Del</button>
                             </form>
@@ -187,23 +187,26 @@
         <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label">Payment Date <span style="color:var(--danger);">*</span></label>
-                <input type="date" name="sale_date" class="form-input" value="{{ now()->format('Y-m-d') }}" required>
+                <input type="date" name="sale_date" class="form-input" value="{{ old('amount') !== null ? old('sale_date') : now()->format('Y-m-d') }}" required>
+                @if(old('amount') !== null) @error('sale_date') <span class="field-error">{{ $message }}</span> @enderror @endif
             </div>
             <div class="form-group">
                 <label class="form-label">Payment Method <span style="color:var(--danger);">*</span></label>
                 <select name="payment_method" class="form-select" required>
-                    <option value="Cash">Cash</option>
-                    <option value="GCash">GCash</option>
-                    <option value="Maya">Maya</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Cheque">Cheque</option>
-                    <option value="Other">Other</option>
+                    <option value="Cash" @selected(old('payment_method')==='Cash')>Cash</option>
+                    <option value="GCash" @selected(old('payment_method')==='GCash')>GCash</option>
+                    <option value="Maya" @selected(old('payment_method')==='Maya')>Maya</option>
+                    <option value="Bank Transfer" @selected(old('payment_method')==='Bank Transfer')>Bank Transfer</option>
+                    <option value="Cheque" @selected(old('payment_method')==='Cheque')>Cheque</option>
+                    <option value="Other" @selected(old('payment_method')==='Other')>Other</option>
                 </select>
+                @if(old('amount') !== null) @error('payment_method') <span class="field-error">{{ $message }}</span> @enderror @endif
             </div>
             <div class="form-group">
                 <label class="form-label">Amount Paid (₱) <span style="color:var(--danger);">*</span></label>
                 <input type="number" name="amount" class="form-input" step="0.01" min="0.01"
-                       placeholder="{{ number_format($remaining, 2) }}" required>
+                       value="{{ old('amount') }}" placeholder="{{ number_format($remaining, 2) }}" required>
+                @error('amount') <span class="field-error">{{ $message }}</span> @enderror
                 @if($remaining > 0)
                 <span style="font-size:.75rem;color:var(--text-muted);margin-top:.25rem;">Balance: ₱{{ number_format($remaining,2) }}</span>
                 @endif
@@ -211,13 +214,14 @@
             <div class="form-group">
                 <label class="form-label">Quantity (kg)</label>
                 <input type="number" name="quantity_kg" class="form-input" step="0.01" min="0.01"
-                       value="{{ number_format($order->quantity_kg - $order->sales->sum('quantity_kg'), 2, '.', '') }}"
+                       value="{{ old('amount') !== null ? old('quantity_kg') : number_format($order->quantity_kg - $order->sales->sum('quantity_kg'), 2, '.', '') }}"
                        placeholder="{{ number_format($order->quantity_kg,2) }}">
             </div>
         </div>
         <div class="form-group">
             <label class="form-label">Remarks</label>
-            <textarea name="remarks" class="form-textarea" placeholder="Reference no., notes…"></textarea>
+            <textarea name="remarks" class="form-textarea" placeholder="Reference no., notes…">{{ old('amount') !== null ? old('remarks') : '' }}</textarea>
+            @if(old('amount') !== null) @error('remarks') <span class="field-error">{{ $message }}</span> @enderror @endif
         </div>
 
         {{-- Summary box --}}
@@ -254,17 +258,19 @@
             <label class="form-label">Order Status</label>
             <select name="order_status" class="form-select" required>
                 @foreach(['pending','processing','completed','cancelled'] as $s)
-                    <option value="{{ $s }}" @selected($order->order_status===$s)>{{ ucfirst($s) }}</option>
+                    <option value="{{ $s }}" @selected(old('order_status', $order->order_status)===$s)>{{ ucfirst($s) }}</option>
                 @endforeach
             </select>
+            @error('order_status') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-group">
             <label class="form-label">Payment Status</label>
             <select name="payment_status" class="form-select" required>
-                <option value="unpaid" @selected($order->payment_status==='unpaid')>Unpaid</option>
-                <option value="partial" @selected($order->payment_status==='partial')>Partial</option>
-                <option value="paid" @selected($order->payment_status==='paid')>Paid</option>
+                <option value="unpaid" @selected(old('payment_status', $order->payment_status)==='unpaid')>Unpaid</option>
+                <option value="partial" @selected(old('payment_status', $order->payment_status)==='partial')>Partial</option>
+                <option value="paid" @selected(old('payment_status', $order->payment_status)==='paid')>Paid</option>
             </select>
+            @error('payment_status') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-actions">
             <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
@@ -280,33 +286,37 @@
         @csrf @method('PATCH')
         <div class="form-group">
             <label class="form-label">Destination</label>
-            <input type="text" name="destination" class="form-input" value="{{ $order->delivery?->destination ?? $order->customer?->address }}" required>
+            <input type="text" name="destination" class="form-input" value="{{ old('destination', $order->delivery?->destination ?? $order->customer?->address) }}" required>
+            @error('destination') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label">Delivery Date</label>
-                <input type="date" name="delivery_date" class="form-input" value="{{ $order->delivery?->delivery_date?->format('Y-m-d') ?? $order->delivery_date->format('Y-m-d') }}" required>
+                <input type="date" name="delivery_date" class="form-input" value="{{ old('destination') !== null ? old('delivery_date') : ($order->delivery?->delivery_date?->format('Y-m-d') ?? $order->delivery_date->format('Y-m-d')) }}" required>
+                @if(old('destination') !== null) @error('delivery_date') <span class="field-error">{{ $message }}</span> @enderror @endif
             </div>
             <div class="form-group">
                 <label class="form-label">Transport Status</label>
                 <select name="transport_status" class="form-select" required>
                     @foreach(['scheduled','in_transit','delivered','cancelled'] as $s)
-                        <option value="{{ $s }}" @selected(($order->delivery?->transport_status??'scheduled')===$s)>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
+                        <option value="{{ $s }}" @selected((old('destination') !== null ? old('transport_status') : ($order->delivery?->transport_status??'scheduled'))===$s)>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
                     @endforeach
                 </select>
+                @if(old('destination') !== null) @error('transport_status') <span class="field-error">{{ $message }}</span> @enderror @endif
             </div>
             <div class="form-group">
                 <label class="form-label">Assigned Personnel</label>
-                <input type="text" name="assigned_personnel" class="form-input" value="{{ $order->delivery?->assigned_personnel }}" placeholder="Driver/courier name">
+                <input type="text" name="assigned_personnel" class="form-input" value="{{ old('destination') !== null ? old('assigned_personnel') : $order->delivery?->assigned_personnel }}" placeholder="Driver/courier name">
             </div>
             <div class="form-group">
                 <label class="form-label">Vehicle</label>
-                <input type="text" name="vehicle_info" class="form-input" value="{{ $order->delivery?->vehicle_info }}" placeholder="Van 1, Motorbike…">
+                <input type="text" name="vehicle_info" class="form-input" value="{{ old('destination') !== null ? old('vehicle_info') : $order->delivery?->vehicle_info }}" placeholder="Van 1, Motorbike…">
             </div>
         </div>
         <div class="form-group">
             <label class="form-label">Remarks</label>
-            <textarea name="remarks" class="form-textarea" placeholder="Delivery notes…">{{ $order->delivery?->remarks }}</textarea>
+            <textarea name="remarks" class="form-textarea" placeholder="Delivery notes…">{{ old('amount') === null ? old('remarks', $order->delivery?->remarks) : $order->delivery?->remarks }}</textarea>
+            @if(old('amount') === null && old('destination') !== null) @error('remarks') <span class="field-error">{{ $message }}</span> @enderror @endif
         </div>
         <div class="form-actions">
             <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
@@ -314,4 +324,12 @@
         </div>
     </form>
 </dialog>
+
+@if($errors->any())
+<script>
+    document.getElementById(
+        {{ old('amount') !== null ? "'record-payment'" : (old('destination') !== null ? "'update-delivery'" : "'update-status'") }}
+    ).showModal();
+</script>
+@endif
 @endsection

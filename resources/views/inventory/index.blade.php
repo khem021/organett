@@ -38,12 +38,34 @@
 </div>
 </form>
 
+{{-- Active filter pills --}}
+@if(request()->hasAny(['search','category','filter']))
+<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;">
+    <span style="font-size:.75rem;color:var(--text-dim);">Filtered by:</span>
+    @if(request('search'))<span class="filter-pill">Search: "{{ request('search') }}" <a href="{{ route('inventory.index', array_diff_key(request()->query(), ['search'=>''])) }}">×</a></span>@endif
+    @if(request('category'))<span class="filter-pill">{{ request('category') }} <a href="{{ route('inventory.index', array_diff_key(request()->query(), ['category'=>''])) }}">×</a></span>@endif
+    @if(request('filter') === 'low')<span class="filter-pill">Low Stock only <a href="{{ route('inventory.index', array_diff_key(request()->query(), ['filter'=>''])) }}">×</a></span>@endif
+</div>
+@endif
+
 {{-- Main grid --}}
 <div class="grid-main">
     {{-- Inventory Table --}}
     <div class="card">
         @if($items->isEmpty())
-            <div class="empty-state">No inventory items found.</div>
+            <div class="empty-state-full">
+                <div class="empty-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                </div>
+                @if(request()->hasAny(['search','category','filter']))
+                    <p>No items match your filters.</p>
+                    <a href="{{ route('inventory.index') }}" class="btn-secondary">Clear filters</a>
+                @else
+                    <p>No inventory items yet.</p>
+                    <small>Add supplies, materials, and packaging to track stock levels.</small>
+                    <button class="btn-primary" onclick="document.getElementById('add-item').showModal()">+ Add Item</button>
+                @endif
+            </div>
         @else
         <table>
             <thead>
@@ -69,6 +91,10 @@
                         @endif
                     </td>
                     <td style="white-space:nowrap;">
+                        <button class="btn-sm btn-sm-yellow"
+                            onclick="openEdit({{ $item->id }}, '{{ addslashes($item->item_name) }}', '{{ addslashes($item->category) }}', '{{ addslashes($item->unit) }}', {{ $item->reorder_level }}, '{{ addslashes($item->location ?? '') }}')">
+                            Edit
+                        </button>
                         <button class="btn-sm btn-sm-green"
                             onclick="openAdjust({{ $item->id }}, '{{ addslashes($item->item_name) }}', {{ $item->stock_qty }}, '{{ $item->unit }}')">
                             Adjust
@@ -76,7 +102,7 @@
                         <form method="POST" action="{{ route('inventory.destroy', $item) }}" style="display:inline"
                               data-confirm="Delete &ldquo;{{ $item->item_name }}&rdquo; from inventory? This cannot be undone.">
                             @csrf @method('DELETE')
-                            <button type="submit" class="btn-sm btn-sm-red" title="Delete item">Del</button>
+                            <button type="submit" class="btn-sm btn-sm-red" title="Delete item">Delete</button>
                         </form>
                     </td>
                 </tr>
@@ -121,32 +147,79 @@
         <div class="form-grid-2">
             <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Item Name</label>
-                <input type="text" name="item_name" class="form-input" placeholder="Fresh Mushrooms" required>
+                <input type="text" name="item_name" class="form-input" value="{{ old('item_name') }}" placeholder="Fresh Mushrooms" required>
+                @error('item_name') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Category</label>
-                <input type="text" name="category" class="form-input" placeholder="Production Supplies" required>
+                <input type="text" name="category" class="form-input" value="{{ old('category') }}" placeholder="Production Supplies" required>
+                @error('category') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Unit</label>
-                <input type="text" name="unit" class="form-input" placeholder="kg / pcs / bottles" required>
+                <input type="text" name="unit" class="form-input" value="{{ old('unit') }}" placeholder="kg / pcs / bottles" required>
+                @error('unit') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Initial Stock</label>
-                <input type="number" name="stock_qty" class="form-input" step="0.01" min="0" value="0" required>
+                <input type="number" name="stock_qty" class="form-input" step="0.01" min="0" value="{{ old('stock_qty', 0) }}" required>
+                @error('stock_qty') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Reorder Level</label>
-                <input type="number" name="reorder_level" class="form-input" step="0.01" min="0" value="0" required>
+                <input type="number" name="reorder_level" class="form-input" step="0.01" min="0" value="{{ old('reorder_level', 0) }}" required>
+                @error('reorder_level') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Storage Location</label>
-                <input type="text" name="location" class="form-input" placeholder="Warehouse A">
+                <input type="text" name="location" class="form-input" value="{{ old('location') }}" placeholder="Warehouse A">
+                @error('location') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
         <div class="form-actions">
             <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
             <button type="submit" class="btn-primary" style="padding:.5rem 1.25rem;font-size:.875rem;">Add Item</button>
+        </div>
+    </form>
+</dialog>
+
+{{-- Edit Item Modal --}}
+<dialog id="edit-item">
+    <div class="modal-title">Edit Inventory Item <button class="modal-close" onclick="this.closest('dialog').close()">×</button></div>
+    <form method="POST" id="edit-item-form" action="{{ old('_edit_id') ? route('inventory.update', old('_edit_id')) : '' }}">
+        @csrf @method('PUT')
+        <input type="hidden" name="_edit_id" id="edit-item-id-field" value="{{ old('_edit_id') }}">
+        <div class="form-grid-2">
+            <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label">Item Name</label>
+                <input type="text" name="item_name" id="edit-item-name" class="form-input" value="{{ old('item_name') }}" required maxlength="150">
+                @error('item_name') <span class="field-error">{{ $message }}</span> @enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <input type="text" name="category" id="edit-item-category" class="form-input" value="{{ old('category') }}" required maxlength="120">
+                @error('category') <span class="field-error">{{ $message }}</span> @enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label">Unit</label>
+                <input type="text" name="unit" id="edit-item-unit" class="form-input" value="{{ old('unit') }}" required maxlength="50">
+                @error('unit') <span class="field-error">{{ $message }}</span> @enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label">Reorder Level</label>
+                <input type="number" name="reorder_level" id="edit-item-reorder" class="form-input" step="0.01" min="0.01" value="{{ old('reorder_level') }}" required>
+                @error('reorder_level') <span class="field-error">{{ $message }}</span> @enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label">Storage Location</label>
+                <input type="text" name="location" id="edit-item-location" class="form-input" value="{{ old('location') }}" maxlength="150" placeholder="Optional">
+                @error('location') <span class="field-error">{{ $message }}</span> @enderror
+            </div>
+        </div>
+        <p style="font-size:.75rem;color:var(--text-dim);margin-bottom:1rem;">To change the stock quantity, use the <strong style="color:var(--text-muted);">Adjust</strong> button instead.</p>
+        <div class="form-actions">
+            <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
+            <button type="submit" class="btn-primary" style="padding:.5rem 1.25rem;font-size:.875rem;">Save Changes</button>
         </div>
     </form>
 </dialog>
@@ -186,6 +259,16 @@
 </dialog>
 
 <script>
+function openEdit(id, name, category, unit, reorder, location) {
+    document.getElementById('edit-item-form').action = '/inventory/' + id;
+    document.getElementById('edit-item-id-field').value = id;
+    document.getElementById('edit-item-name').value     = name;
+    document.getElementById('edit-item-category').value = category;
+    document.getElementById('edit-item-unit').value     = unit;
+    document.getElementById('edit-item-reorder').value  = reorder;
+    document.getElementById('edit-item-location').value = location;
+    document.getElementById('edit-item').showModal();
+}
 function openAdjust(id, name, current, unit) {
     document.getElementById('adj-name').textContent = name;
     document.getElementById('adj-current').textContent = current + ' ' + unit;
@@ -195,6 +278,6 @@ function openAdjust(id, name, current, unit) {
 </script>
 
 @if($errors->any())
-<script>document.getElementById('add-item').showModal();</script>
+<script>document.getElementById('{{ old('_edit_id') ? 'edit-item' : 'add-item' }}').showModal();</script>
 @endif
 @endsection

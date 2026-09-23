@@ -166,7 +166,8 @@
                     <td><span class="badge {{ $gc[$hr->quality_grade]??'badge-gray' }}">Grade {{ $hr->quality_grade }}</span></td>
                     <td style="font-size:.75rem;color:var(--text-muted);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $hr->notes ?? '—' }}</td>
                     <td>
-                        <form method="POST" action="{{ route('harvest.destroy', $hr) }}" onsubmit="return true">
+                        <form method="POST" action="{{ route('harvest.destroy', $hr) }}"
+                              data-confirm="Delete this harvest record ({{ number_format($hr->quantity_kg,2) }} kg)? This cannot be undone.">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn-sm btn-sm-red">Del</button>
                         </form>
@@ -193,32 +194,38 @@
         <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label">Substrate Type</label>
-                <input type="text" name="substrate_type" class="form-input" value="{{ $batch->substrate_type }}" required>
+                <input type="text" name="substrate_type" class="form-input" value="{{ old('substrate_type', $batch->substrate_type) }}" required>
+                @error('substrate_type') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Spawn Type</label>
-                <input type="text" name="spawn_type" class="form-input" value="{{ $batch->spawn_type }}" required>
+                <input type="text" name="spawn_type" class="form-input" value="{{ old('spawn_type', $batch->spawn_type) }}" required>
+                @error('spawn_type') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Inoculation Date</label>
-                <input type="date" name="inoculation_date" class="form-input" value="{{ $batch->inoculation_date->format('Y-m-d') }}" required>
+                <input type="date" name="inoculation_date" class="form-input" value="{{ old('inoculation_date', $batch->inoculation_date->format('Y-m-d')) }}" required>
+                @error('inoculation_date') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Expected Harvest Date</label>
-                <input type="date" name="expected_harvest_date" class="form-input" value="{{ $batch->expected_harvest_date->format('Y-m-d') }}" required>
+                <input type="date" name="expected_harvest_date" class="form-input" value="{{ old('expected_harvest_date', $batch->expected_harvest_date->format('Y-m-d')) }}" required>
+                @error('expected_harvest_date') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Status</label>
                 <select name="status" class="form-select" required>
                     @foreach(['planned','inoculated','fruiting','harvested','completed','contaminated'] as $s)
-                        <option value="{{ $s }}" @selected($batch->status===$s)>{{ ucfirst($s) }}</option>
+                        <option value="{{ $s }}" @selected(old('status', $batch->status)===$s)>{{ ucfirst($s) }}</option>
                     @endforeach
                 </select>
+                @error('status') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
         <div class="form-group">
             <label class="form-label">Notes</label>
-            <textarea name="notes" class="form-textarea">{{ $batch->notes }}</textarea>
+            <textarea name="notes" class="form-textarea">{{ old('harvest_date') === null ? old('notes', $batch->notes) : $batch->notes }}</textarea>
+            @if(old('harvest_date') === null) @error('notes') <span class="field-error">{{ $message }}</span> @enderror @endif
         </div>
         <div class="form-actions">
             <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
@@ -236,24 +243,28 @@
         <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label">Harvest Date</label>
-                <input type="date" name="harvest_date" class="form-input" value="{{ now()->format('Y-m-d') }}" required>
+                <input type="date" name="harvest_date" class="form-input" value="{{ old('harvest_date', now()->format('Y-m-d')) }}" required>
+                @error('harvest_date') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Quality Grade</label>
                 <select name="quality_grade" class="form-select" required>
-                    <option value="A">Grade A — Premium</option>
-                    <option value="B">Grade B — Standard</option>
-                    <option value="C">Grade C — Processing</option>
+                    <option value="A" @selected(old('quality_grade')==='A')>Grade A — Premium</option>
+                    <option value="B" @selected(old('quality_grade')==='B')>Grade B — Standard</option>
+                    <option value="C" @selected(old('quality_grade')==='C')>Grade C — Processing</option>
                 </select>
+                @error('quality_grade') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Quantity (kg)</label>
-                <input type="number" name="quantity_kg" class="form-input" step="0.01" min="0.01" placeholder="0.00" required>
+                <input type="number" name="quantity_kg" class="form-input" step="0.01" min="0.01" value="{{ old('quantity_kg') }}" placeholder="0.00" required>
+                @error('quantity_kg') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
         <div class="form-group">
             <label class="form-label">Notes</label>
-            <textarea name="notes" class="form-textarea" placeholder="Flush no., observations, room conditions…"></textarea>
+            <textarea name="notes" class="form-textarea" placeholder="Flush no., observations, room conditions…">{{ old('harvest_date') !== null ? old('notes') : '' }}</textarea>
+            @if(old('harvest_date') !== null) @error('notes') <span class="field-error">{{ $message }}</span> @enderror @endif
         </div>
         <div class="form-actions">
             <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
@@ -261,5 +272,9 @@
         </div>
     </form>
 </dialog>
+
+@if($errors->any())
+<script>document.getElementById('{{ old('harvest_date') !== null ? 'log-harvest' : 'edit-batch' }}').showModal();</script>
+@endif
 
 @endsection

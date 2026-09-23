@@ -7,73 +7,39 @@
 <div class="page-header">
     <div class="page-header-left">
         <h2>User Accounts</h2>
-        <p>{{ $users->count() }} total · {{ $users->where('status','active')->count() }} active · {{ $users->where('role','admin')->count() }} admin</p>
+        <p>{{ $userStats['total'] }} total · {{ $userStats['active'] }} active · {{ $userStats['admin'] }} admin</p>
     </div>
     <div class="page-header-right">
         <button class="btn-primary" style="padding:.5rem 1rem;font-size:.875rem;" onclick="document.getElementById('create-user').showModal()">+ New User</button>
     </div>
 </div>
 
-@if(session('success'))
-    <div class="flash flash-success">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-    <div class="flash flash-error">{{ session('error') }}</div>
-@endif
-
-<style>
-.avatar-circle {
-    width: 2rem; height: 2rem; border-radius: 50%;
-    object-fit: cover; flex-shrink: 0;
-    border: 1px solid var(--card-border);
-}
-.avatar-initials {
-    width: 2rem; height: 2rem; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: .6875rem; font-weight: 700; color: #fff; flex-shrink: 0;
-}
-
-/* Photo upload area */
-.photo-upload-wrap {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: .875rem;
-}
-.photo-preview {
-    width: 3.5rem; height: 3.5rem; border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--card-border);
-    background: var(--card-bg);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.25rem; color: var(--text-muted);
-    overflow: hidden; flex-shrink: 0;
-}
-.photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-.photo-upload-btn {
-    flex: 1;
-}
-.photo-upload-label {
-    display: inline-flex; align-items: center; gap: .4rem;
-    padding: .4375rem .875rem;
-    font-size: .8125rem; font-weight: 500; font-family: inherit;
-    color: var(--text-muted);
-    background: transparent;
-    border: 1px dashed var(--card-border);
-    border-radius: .5rem;
-    cursor: pointer;
-    transition: all .15s;
-    width: 100%;
-    justify-content: center;
-}
-.photo-upload-label:hover { border-color: var(--green-accent); color: var(--text); }
-.photo-upload-label input { display: none; }
-.photo-upload-hint { font-size: .7rem; color: var(--text-muted); margin-top: .25rem; text-align: center; }
-</style>
+{{-- Search --}}
+<form method="GET" action="{{ route('users.index') }}">
+<div class="filter-bar">
+    <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Search name, username, email…">
+    <button type="submit" class="btn-secondary">Search</button>
+    @if(request('search'))
+        <a href="{{ route('users.index') }}" class="btn-secondary">Clear</a>
+    @endif
+</div>
+</form>
 
 <div class="card">
     @if($users->isEmpty())
-        <div class="empty-state">No users found.</div>
+        <div class="empty-state-full">
+            <div class="empty-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            @if(request('search'))
+                <p>No users match "{{ request('search') }}".</p>
+                <a href="{{ route('users.index') }}" class="btn-secondary">Clear search</a>
+            @else
+                <p>No users yet.</p>
+                <small>Add staff and admin accounts for your farm.</small>
+                <button class="btn-primary" onclick="document.getElementById('create-user').showModal()">+ New User</button>
+            @endif
+        </div>
     @else
     <table>
         <thead>
@@ -87,7 +53,7 @@
                         @if($u->profile_photo)
                             <img src="{{ Storage::url($u->profile_photo) }}" alt="{{ $u->full_name }}" class="avatar-circle">
                         @else
-                            <div class="avatar-initials" style="background:linear-gradient(135deg,{{ $u->role==='admin' ? '#14532d,#16a34a' : '#0c4a6e,#38bdf8' }});">
+                            <div class="avatar-initials" style="background:linear-gradient(135deg,{{ $u->role==='farm_admin' ? '#14532d,#16a34a' : '#0c4a6e,#38bdf8' }});">
                                 {{ strtoupper(substr($u->full_name,0,1)) }}
                             </div>
                         @endif
@@ -100,7 +66,7 @@
                 <td style="font-size:.75rem;color:var(--text-muted);">{{ $u->username }}</td>
                 <td style="font-size:.75rem;">{{ $u->email }}</td>
                 <td>
-                    @if($u->role === 'admin')
+                    @if($u->role === 'farm_admin')
                         <span class="badge badge-green"><span class="badge-dot"></span>Admin</span>
                     @else
                         <span class="badge badge-blue"><span class="badge-dot"></span>Staff</span>
@@ -119,7 +85,8 @@
                         Edit
                     </button>
                     @if($u->id !== Auth::id())
-                    <form method="POST" action="{{ route('users.destroy', $u) }}" style="display:inline" onsubmit="return true">
+                    <form method="POST" action="{{ route('users.destroy', $u) }}" style="display:inline"
+                          data-confirm="Delete user &ldquo;{{ $u->full_name }}&rdquo;? This cannot be undone.">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn-sm btn-sm-red">Del</button>
                     </form>
@@ -129,6 +96,7 @@
             @endforeach
         </tbody>
     </table>
+    <div style="margin-top:1rem;">{{ $users->links() }}</div>
     @endif
 </div>
 
@@ -156,37 +124,37 @@
         <div class="form-grid-2">
             <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Full Name</label>
-                <input type="text" name="full_name" class="form-input" placeholder="Juan dela Cruz" required>
+                <input type="text" name="full_name" class="form-input" value="{{ old('full_name') }}" placeholder="Juan dela Cruz" required>
+                @error('full_name') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-input" placeholder="juandc" required>
+                <input type="text" name="username" class="form-input" value="{{ old('username') }}" placeholder="juandc" required>
+                @error('username') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Role</label>
                 <select name="role" class="form-select" required>
-                    <option value="staff">Staff</option>
-                    <option value="admin">Admin</option>
+                    <option value="farm_staff" @selected(old('role', 'farm_staff')==='farm_staff')>Staff</option>
+                    <option value="farm_admin" @selected(old('role')==='farm_admin')>Admin</option>
                 </select>
+                @error('role') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-input" placeholder="juan@organett.local" required>
+                <input type="email" name="email" class="form-input" value="{{ old('email') }}" placeholder="juan@organett.local" required>
+                @error('email') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Password</label>
                 <input type="password" name="password" class="form-input" placeholder="Min. 8 chars, letters + numbers" required>
+                @error('password') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Confirm Password</label>
                 <input type="password" name="password_confirmation" class="form-input" placeholder="Repeat password" required>
             </div>
         </div>
-        @if($errors->any())
-            @foreach($errors->all() as $e)
-                <div class="flash flash-error" style="margin-bottom:.5rem;padding:.5rem .75rem;">{{ $e }}</div>
-            @endforeach
-        @endif
         <div class="form-actions">
             <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
             <button type="submit" class="btn-primary" style="padding:.5rem 1.25rem;font-size:.875rem;">Create User</button>
@@ -197,8 +165,10 @@
 {{-- Edit User Modal --}}
 <dialog id="edit-user">
     <div class="modal-title">Edit User <button class="modal-close" onclick="this.closest('dialog').close()">×</button></div>
-    <form method="POST" id="edit-user-form" enctype="multipart/form-data">
+    <form method="POST" id="edit-user-form" enctype="multipart/form-data"
+          action="{{ old('_edit_id') ? route('users.update', old('_edit_id')) : '' }}">
         @csrf @method('PUT')
+        <input type="hidden" name="_edit_id" id="edit-user-id-field" value="{{ old('_edit_id') }}">
 
         {{-- Photo Upload --}}
         <div class="photo-upload-wrap">
@@ -217,22 +187,25 @@
 
         <div class="form-group">
             <label class="form-label">Full Name</label>
-            <input type="text" name="full_name" id="edit-full-name" class="form-input" required>
+            <input type="text" name="full_name" id="edit-full-name" class="form-input" value="{{ old('full_name') }}" required>
+            @error('full_name') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label">Role</label>
                 <select name="role" id="edit-role" class="form-select" required>
-                    <option value="staff">Staff</option>
-                    <option value="admin">Admin</option>
+                    <option value="farm_staff" @selected(old('role')==='farm_staff')>Staff</option>
+                    <option value="farm_admin" @selected(old('role')==='farm_admin')>Admin</option>
                 </select>
+                @error('role') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Status</label>
                 <select name="status" id="edit-status" class="form-select" required>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="active" @selected(old('status')==='active')>Active</option>
+                    <option value="inactive" @selected(old('status')==='inactive')>Inactive</option>
                 </select>
+                @error('status') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
         <div style="background:#0a1a0e;border:1px solid var(--card-border);border-radius:.5rem;padding:.75rem 1rem;margin-bottom:.875rem;font-size:.75rem;color:var(--text-muted);">
@@ -242,6 +215,7 @@
             <div class="form-group">
                 <label class="form-label">New Password</label>
                 <input type="password" name="password" class="form-input" placeholder="Leave blank to keep">
+                @error('password') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Confirm Password</label>
@@ -269,6 +243,7 @@ function previewPhoto(input, previewId) {
 
 function openEdit(id, fullName, role, status, photoUrl) {
     document.getElementById('edit-user-form').action = '/users/' + id;
+    document.getElementById('edit-user-id-field').value = id;
     document.getElementById('edit-full-name').value = fullName;
     document.getElementById('edit-role').value = role;
     document.getElementById('edit-status').value = status;
@@ -285,7 +260,7 @@ function openEdit(id, fullName, role, status, photoUrl) {
 </script>
 
 @if($errors->any())
-<script>document.getElementById('create-user').showModal();</script>
+<script>document.getElementById('{{ old('_edit_id') ? 'edit-user' : 'create-user' }}').showModal();</script>
 @endif
 
 @endsection

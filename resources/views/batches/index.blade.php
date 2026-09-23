@@ -31,10 +31,35 @@
 </div>
 </form>
 
+{{-- Active filter pills --}}
+@if(request()->hasAny(['search','status']))
+<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;">
+    <span style="font-size:.75rem;color:var(--text-dim);">Filtered by:</span>
+    @if(request('search'))
+        <span class="filter-pill">Search: "{{ request('search') }}" <a href="{{ route('batches.index', array_diff_key(request()->query(), ['search'=>''])) }}">×</a></span>
+    @endif
+    @if(request('status'))
+        <span class="filter-pill">{{ ucfirst(request('status')) }} <a href="{{ route('batches.index', array_diff_key(request()->query(), ['status'=>''])) }}">×</a></span>
+    @endif
+</div>
+@endif
+
 {{-- Table --}}
 <div class="card">
     @if($batches->isEmpty())
-        <div class="empty-state">No batches found. Create your first batch to get started.</div>
+        <div class="empty-state-full">
+            <div class="empty-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            </div>
+            @if(request()->hasAny(['search','status']))
+                <p>No batches match your filters.</p>
+                <a href="{{ route('batches.index') }}" class="btn-secondary">Clear filters</a>
+            @else
+                <p>No production batches yet.</p>
+                <small>Create your first batch to start tracking your grow cycles.</small>
+                <button class="btn-primary" onclick="document.getElementById('create-batch').showModal()">+ New Batch</button>
+            @endif
+        </div>
     @else
     <table>
         <thead>
@@ -45,20 +70,30 @@
         </thead>
         <tbody>
             @foreach($batches as $batch)
-            <tr>
-                <td class="text-main">{{ $batch->batch_code }}</td>
-                <td>{{ $batch->substrate_type }}</td>
-                <td>{{ $batch->spawn_type }}</td>
+            @php
+                $map = ['planned'=>'badge-gray','inoculated'=>'badge-blue','fruiting'=>'badge-green','harvested'=>'badge-yellow','completed'=>'badge-green','contaminated'=>'badge-red'];
+                $isOverdue = $batch->expected_harvest_date->isPast() && $batch->status === 'fruiting';
+            @endphp
+            <tr data-href="{{ route('batches.show', $batch) }}"
+                @if($isOverdue) style="background:#7f1d1d0a;" @endif>
+                <td class="text-main">
+                    {{ $batch->batch_code }}
+                    @if($isOverdue) <span style="font-size:.65rem;color:var(--danger);margin-left:.25rem;">⚠ Overdue</span> @endif
+                </td>
+                <td style="font-size:.8125rem;">{{ $batch->substrate_type }}</td>
+                <td style="font-size:.8125rem;">{{ $batch->spawn_type }}</td>
                 <td>
-                    @php $map = ['planned'=>'badge-gray','inoculated'=>'badge-blue','fruiting'=>'badge-green','harvested'=>'badge-yellow','completed'=>'badge-green','contaminated'=>'badge-red']; @endphp
                     <span class="badge {{ $map[$batch->status] ?? 'badge-gray' }}"><span class="badge-dot"></span>{{ ucfirst($batch->status) }}</span>
                 </td>
-                <td>{{ $batch->inoculation_date->format('M d, Y') }}</td>
-                <td>{{ $batch->expected_harvest_date->format('M d, Y') }}</td>
-                <td>{{ $batch->creator?->full_name ?? '—' }}</td>
+                <td style="font-size:.8125rem;">{{ $batch->inoculation_date->format('M d, Y') }}</td>
+                <td style="font-size:.8125rem;{{ $isOverdue ? 'color:var(--danger);font-weight:600;' : '' }}">
+                    {{ $batch->expected_harvest_date->format('M d, Y') }}
+                </td>
+                <td style="font-size:.8125rem;">{{ $batch->creator?->full_name ?? '—' }}</td>
                 <td style="white-space:nowrap;">
                     <a href="{{ route('batches.show', $batch) }}" class="btn-sm btn-sm-blue">View</a>
-                    <form method="POST" action="{{ route('batches.destroy', $batch) }}" style="display:inline" onsubmit="return true">
+                    <form method="POST" action="{{ route('batches.destroy', $batch) }}" style="display:inline"
+                          data-confirm="Delete batch &ldquo;{{ $batch->batch_code }}&rdquo;? This cannot be undone.">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn-sm btn-sm-red">Delete</button>
                     </form>
@@ -79,36 +114,43 @@
         <div class="form-grid-2">
             <div class="form-group">
                 <label class="form-label">Batch Code</label>
-                <input type="text" name="batch_code" class="form-input" placeholder="BATCH-2026-009" required>
+                <input type="text" name="batch_code" class="form-input" value="{{ old('batch_code') }}" placeholder="BATCH-2026-009" required>
+                @error('batch_code') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Status</label>
                 <select name="status" class="form-select" required>
                     @foreach(['planned','inoculated','fruiting','harvested','completed','contaminated'] as $s)
-                        <option value="{{ $s }}">{{ ucfirst($s) }}</option>
+                        <option value="{{ $s }}" @selected(old('status', 'planned')===$s)>{{ ucfirst($s) }}</option>
                     @endforeach
                 </select>
+                @error('status') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Substrate Type</label>
-                <input type="text" name="substrate_type" class="form-input" placeholder="Sawdust + Rice Bran" required>
+                <input type="text" name="substrate_type" class="form-input" value="{{ old('substrate_type') }}" placeholder="Sawdust + Rice Bran" required>
+                @error('substrate_type') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Spawn Type</label>
-                <input type="text" name="spawn_type" class="form-input" placeholder="Pink Oyster Spawn" required>
+                <input type="text" name="spawn_type" class="form-input" value="{{ old('spawn_type') }}" placeholder="Pink Oyster Spawn" required>
+                @error('spawn_type') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Inoculation Date</label>
-                <input type="date" name="inoculation_date" class="form-input" required>
+                <input type="date" name="inoculation_date" class="form-input" value="{{ old('inoculation_date') }}" required>
+                @error('inoculation_date') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Expected Harvest Date</label>
-                <input type="date" name="expected_harvest_date" class="form-input" required>
+                <input type="date" name="expected_harvest_date" class="form-input" value="{{ old('expected_harvest_date') }}" required>
+                @error('expected_harvest_date') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
         <div class="form-group">
             <label class="form-label">Notes</label>
-            <textarea name="notes" class="form-textarea" placeholder="Optional notes…"></textarea>
+            <textarea name="notes" class="form-textarea" placeholder="Optional notes…">{{ old('notes') }}</textarea>
+            @error('notes') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-actions">
             <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
