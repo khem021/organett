@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToFarm;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,10 +10,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductionBatch extends Model
 {
-    use SoftDeletes;
+    use BelongsToFarm, SoftDeletes;
 
     protected $fillable = [
-        'batch_code', 'substrate_type', 'spawn_type',
+        'farm_id', 'batch_code', 'substrate_type', 'spawn_type',
         'inoculation_date', 'expected_harvest_date',
         'status', 'notes', 'created_by',
     ];

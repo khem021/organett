@@ -9,10 +9,13 @@ class ActivityLogger
 {
     public static function log(string $module, string $action, string $description): void
     {
+        $user = Auth::user();
+
         ActivityLog::create([
-            'user_id'     => Auth::id(),
-            'module'      => $module,
-            'action'      => $action,
+            'farm_id' => $user?->farm_id,
+            'user_id' => $user?->getKey(),
+            'module' => $module,
+            'action' => $action,
             'description' => $description,
         ]);
     }

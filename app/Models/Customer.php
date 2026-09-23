@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToFarm;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Customer extends Model
 {
-    use SoftDeletes;
+    use BelongsToFarm, SoftDeletes;
 
     protected $fillable = [
-        'customer_name', 'contact_person', 'phone', 'email', 'address',
+        'farm_id', 'customer_name', 'contact_person', 'phone', 'email', 'address',
     ];
 
     public function orders(): HasMany

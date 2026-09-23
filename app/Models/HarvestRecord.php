@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToFarm;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class HarvestRecord extends Model
 {
-    use SoftDeletes;
+    use BelongsToFarm, SoftDeletes;
 
     protected $fillable = [
-        'batch_id', 'harvest_date', 'quantity_kg',
+        'farm_id', 'batch_id', 'harvest_date', 'quantity_kg',
         'quality_grade', 'notes', 'created_by',
     ];
 

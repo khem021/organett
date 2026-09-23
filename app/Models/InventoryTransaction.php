@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToFarm;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InventoryTransaction extends Model
 {
+    use BelongsToFarm;
+
     protected $fillable = [
-        'inventory_id', 'transaction_type', 'quantity',
+        'farm_id', 'inventory_id', 'transaction_type', 'quantity',
         'transaction_date', 'notes', 'created_by',
     ];
 

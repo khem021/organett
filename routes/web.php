@@ -1,17 +1,20 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FarmRegistrationController;
 use App\Http\Controllers\HarvestController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SuperAdmin\FarmController as SuperAdminFarmController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +23,10 @@ Route::get('/', fn () => redirect()->route('dashboard'));
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:5,1');
+
+    // Farm registration (public sign-up)
+    Route::get('/register/farm', [FarmRegistrationController::class, 'create'])->name('farm.register');
+    Route::post('/register/farm', [FarmRegistrationController::class, 'store']);
 
     // Password reset
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
@@ -43,11 +50,14 @@ Route::middleware('auth')->group(function () {
     // Harvest
     Route::get('/harvest', [HarvestController::class, 'index'])->name('harvest.index');
     Route::post('/harvest', [HarvestController::class, 'store'])->name('harvest.store');
+    Route::put('/harvest/{harvest}', [HarvestController::class, 'update'])->name('harvest.update');
     Route::delete('/harvest/{harvest}', [HarvestController::class, 'destroy'])->name('harvest.destroy');
 
     // Inventory
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
     Route::post('/inventory', [InventoryController::class, 'store'])->name('inventory.store');
+    Route::get('/inventory/{inventory}', [InventoryController::class, 'show'])->name('inventory.show');
+    Route::put('/inventory/{inventory}', [InventoryController::class, 'update'])->name('inventory.update');
     Route::post('/inventory/{inventory}/adjust', [InventoryController::class, 'adjust'])->name('inventory.adjust');
     Route::delete('/inventory/{inventory}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
 
@@ -71,12 +81,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/{order}/sales', [SaleController::class, 'store'])->name('sales.store');
     Route::delete('/orders/{order}/sales/{sale}', [SaleController::class, 'destroy'])->name('sales.destroy');
 
-    // Reports
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports');
-    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+    // Reports (feature-gated)
+    Route::middleware('feature:reports')->group(function () {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+    });
 
-    // ── Admin-only area ───────────────────────────────────────────────────
+    // ── Farm admin area ───────────────────────────────────────────────────
     Route::middleware('admin')->group(function () {
+        Route::middleware('feature:activity_logs')->group(function () {
+            Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+        });
+
+        Route::middleware('feature:export')->group(function () {
+            Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+        });
 
         // Settings
         Route::get('/settings', [SettingController::class, 'index'])->name('settings');
@@ -87,5 +105,14 @@ Route::middleware('auth')->group(function () {
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
+
+    // ── Super admin master dashboard ─────────────────────────────────────
+    Route::middleware('can:super-admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/farms', [SuperAdminFarmController::class, 'index'])->name('farms.index');
+        Route::get('/farms/{farm}', [SuperAdminFarmController::class, 'show'])->name('farms.show');
+        Route::patch('/farms/{farm}/status', [SuperAdminFarmController::class, 'updateStatus'])->name('farms.status');
+        Route::get('/farms/{farm}/features', [SuperAdminFarmController::class, 'features'])->name('farms.features');
+        Route::patch('/farms/{farm}/features', [SuperAdminFarmController::class, 'updateFeatures'])->name('farms.features.update');
     });
 });

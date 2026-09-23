@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToFarm;
 use Illuminate\Database\Eloquent\Model;
 
 class Alert extends Model
 {
+    use BelongsToFarm;
+
     protected $fillable = [
-        'alert_type', 'message', 'severity',
+        'farm_id', 'alert_type', 'message', 'severity',
         'source_module', 'reference_id', 'is_resolved',
     ];
 

@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToFarm;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Sale extends Model
 {
+    use BelongsToFarm;
+
     protected $fillable = [
-        'order_id', 'customer_id', 'sale_date',
+        'farm_id', 'order_id', 'customer_id', 'sale_date',
         'quantity_kg', 'amount', 'payment_method', 'remarks',
     ];
 

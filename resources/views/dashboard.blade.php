@@ -8,112 +8,10 @@
 
 @section('content')
 
-{{-- ── System Workflow Guide ── --}}
-@push('styles')
-<style>
-.wf-flow {
-    display:flex; align-items:flex-start; gap:.375rem;
-    overflow-x:auto; padding-bottom:.25rem;
-    -webkit-overflow-scrolling:touch;
-}
-.wf-step-link, .wf-step-end {
-    display:flex; flex-direction:column; align-items:center; gap:.3rem;
-    text-decoration:none; min-width:72px;
-    padding:.5rem .375rem;
-    border-radius:.5rem; border:1px solid var(--card-border);
-    background:#0a1510; flex-shrink:0;
-    transition:border-color .15s, background .15s;
-}
-.wf-step-link:hover { border-color:var(--green-accent); background:#16a34a0d; }
-.wf-step-end { opacity:.55; }
-.wf-circle {
-    width:1.75rem; height:1.75rem; border-radius:50%;
-    background:linear-gradient(135deg,var(--green-mid),var(--green-accent));
-    color:#fff; font-size:.7rem; font-weight:700;
-    display:flex; align-items:center; justify-content:center; flex-shrink:0;
-}
-.wf-circle-done { background:linear-gradient(135deg,#14532d,#16a34a); }
-.wf-circle-end  { background:linear-gradient(135deg,#374151,#4b5563); }
-.wf-name { font-size:.6875rem; font-weight:600; color:var(--text); white-space:nowrap; }
-.wf-hint { font-size:.6rem; color:var(--text-muted); white-space:nowrap; text-align:center; line-height:1.3; }
-.wf-arr  { color:var(--text-dim); font-size:.875rem; align-self:center; flex-shrink:0; padding:0 .125rem; }
-@media (max-width:600px) {
-    .wf-step-link, .wf-step-end { min-width:62px; padding:.4rem .25rem; }
-}
-</style>
-@endpush
-
-<div class="card" style="margin-bottom:1.25rem;padding:1rem 1.25rem;">
-    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-dim);flex-shrink:0;">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-        </svg>
-        <span style="font-size:.625rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);">System Workflow</span>
-        <span style="font-size:.6875rem;color:var(--text-muted);margin-left:.125rem;">— Click any step to navigate</span>
-    </div>
-    <div class="wf-flow">
-        <div class="wf-step-end" title="You are logged in">
-            <div class="wf-circle wf-circle-done">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <span class="wf-name">Login</span>
-            <span class="wf-hint">Done</span>
-        </div>
-        <div class="wf-arr">→</div>
-        <a href="{{ route('batches.index') }}" class="wf-step-link" title="Step 1 — Create and track production batches through each growth stage">
-            <div class="wf-circle">1</div>
-            <span class="wf-name">Batches</span>
-            <span class="wf-hint">Create batches</span>
-        </a>
-        <div class="wf-arr">→</div>
-        <a href="{{ route('harvest.index') }}" class="wf-step-link" title="Step 2 — Log harvests from fruiting batches by grade (A / B / C)">
-            <div class="wf-circle">2</div>
-            <span class="wf-name">Harvest</span>
-            <span class="wf-hint">Log yields</span>
-        </a>
-        <div class="wf-arr">→</div>
-        <a href="{{ route('inventory.index') }}" class="wf-step-link" title="Step 3 — Manage supplies and track stock levels">
-            <div class="wf-circle">3</div>
-            <span class="wf-name">Inventory</span>
-            <span class="wf-hint">Track stock</span>
-        </a>
-        <div class="wf-arr">→</div>
-        <a href="{{ route('customers.index') }}" class="wf-step-link" title="Step 4 — Register buyers and manage contact details">
-            <div class="wf-circle">4</div>
-            <span class="wf-name">Customers</span>
-            <span class="wf-hint">Add buyers</span>
-        </a>
-        <div class="wf-arr">→</div>
-        <a href="{{ route('orders.index') }}" class="wf-step-link" title="Step 5 — Create orders, record payments, and track deliveries">
-            <div class="wf-circle">5</div>
-            <span class="wf-name">Orders</span>
-            <span class="wf-hint">Sales & delivery</span>
-        </a>
-        <div class="wf-arr">→</div>
-        <a href="{{ route('reports') }}" class="wf-step-link" title="Step 6 — View analytics and export reports">
-            <div class="wf-circle">6</div>
-            <span class="wf-name">Reports</span>
-            <span class="wf-hint">Analytics</span>
-        </a>
-        <div class="wf-arr">→</div>
-        <div class="wf-step-end" title="Use the Sign out button in the bottom-left when done">
-            <div class="wf-circle wf-circle-end">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <polyline points="16 17 21 12 16 7"/>
-                    <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
-            </div>
-            <span class="wf-name">Logout</span>
-            <span class="wf-hint">Sign out</span>
-        </div>
-    </div>
-</div>
-
 {{-- ── Stat Cards ── --}}
 <div class="grid-4">
 
-    <div class="stat-card">
+    <a href="{{ route('batches.index') }}" class="stat-card">
         <div class="stat-header">
             <span class="stat-label">Active Batches</span>
             <div class="stat-icon" style="background:#14532d22;">
@@ -132,9 +30,9 @@
                 Planned · Inoculated · Fruiting
             @endif
         </div>
-    </div>
+    </a>
 
-    <div class="stat-card">
+    <a href="{{ route('harvest.index') }}" class="stat-card">
         <div class="stat-header">
             <span class="stat-label">Monthly Yield</span>
             <div class="stat-icon" style="background:#78350f22;">
@@ -150,17 +48,17 @@
         <div class="stat-sub">
             @if($yieldChange !== null)
                 @if($yieldChange >= 0)
-                    <span>+{{ $yieldChange }}%</span> vs last month
+                    <span>↑ +{{ $yieldChange }}%</span> vs last month
                 @else
-                    <span class="danger">{{ $yieldChange }}%</span> vs last month
+                    <span class="danger">↓ {{ $yieldChange }}%</span> vs last month
                 @endif
             @else
                 This month so far
             @endif
         </div>
-    </div>
+    </a>
 
-    <div class="stat-card">
+    <a href="{{ route('orders.index', ['status' => 'pending']) }}" class="stat-card">
         <div class="stat-header">
             <span class="stat-label">Pending Orders</span>
             <div class="stat-icon" style="background:#0c4a6e22;">
@@ -180,9 +78,9 @@
                 No dispatches today
             @endif
         </div>
-    </div>
+    </a>
 
-    <div class="stat-card">
+    <a href="{{ route('inventory.index', ['filter' => 'low']) }}" class="stat-card">
         <div class="stat-header">
             <span class="stat-label">Stock Alerts</span>
             <div class="stat-icon" style="background:#7f1d1d22;">
@@ -201,7 +99,7 @@
                 All stock levels OK
             @endif
         </div>
-    </div>
+    </a>
 
 </div>
 
@@ -328,7 +226,7 @@
                     $badgeClass = $statusMap[$batch->status] ?? 'badge-gray';
                     $isOverdue  = $batch->expected_harvest_date->isPast() && $batch->status === 'fruiting';
                 @endphp
-                <tr>
+                <tr data-href="{{ route('batches.show', $batch) }}">
                     <td class="text-main">{{ $batch->batch_code }}</td>
                     <td style="font-size:.75rem;">{{ $batch->substrate_type }}</td>
                     <td><span class="badge {{ $badgeClass }}"><span class="badge-dot"></span>{{ ucfirst($batch->status) }}</span></td>
@@ -412,21 +310,21 @@
                 Quick Actions
             </div>
             <div style="display:flex;flex-direction:column;gap:.5rem;">
-                <a href="{{ route('batches.index') }}" style="display:flex;align-items:center;gap:.625rem;padding:.625rem .75rem;border-radius:.5rem;background:#0a1a0e;border:1px solid var(--card-border);text-decoration:none;color:var(--text);font-size:.8125rem;font-weight:500;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--green-accent)'" onmouseout="this.style.borderColor='var(--card-border)'">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green-light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                <a href="{{ route('batches.index') }}" class="quick-action">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
                     New Batch
                 </a>
-                <a href="{{ route('harvest.index') }}" style="display:flex;align-items:center;gap:.625rem;padding:.625rem .75rem;border-radius:.5rem;background:#0a1a0e;border:1px solid var(--card-border);text-decoration:none;color:var(--text);font-size:.8125rem;font-weight:500;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--green-accent)'" onmouseout="this.style.borderColor='var(--card-border)'">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green-light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <a href="{{ route('harvest.index') }}" class="quick-action">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     Log Harvest
                 </a>
-                <a href="{{ route('orders.index') }}" style="display:flex;align-items:center;gap:.625rem;padding:.625rem .75rem;border-radius:.5rem;background:#0a1a0e;border:1px solid var(--card-border);text-decoration:none;color:var(--text);font-size:.8125rem;font-weight:500;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--green-accent)'" onmouseout="this.style.borderColor='var(--card-border)'">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green-light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                <a href="{{ route('orders.index') }}" class="quick-action">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                     New Order
                 </a>
-                <a href="{{ route('inventory.index') }}" style="display:flex;align-items:center;gap:.625rem;padding:.625rem .75rem;border-radius:.5rem;background:#0a1a0e;border:1px solid var(--card-border);text-decoration:none;color:var(--text);font-size:.8125rem;font-weight:500;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--green-accent)'" onmouseout="this.style.borderColor='var(--card-border)'">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green-light)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                    Update Inventory
+                <a href="{{ route('inventory.index') }}" class="quick-action">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    Adjust Inventory
                 </a>
             </div>
         </div>

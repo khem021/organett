@@ -11,7 +11,9 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! Auth::check() || Auth::user()->role !== 'admin') {
+        $role = Auth::user()?->role;
+
+        if (! in_array($role, ['farm_admin', 'super_admin'], true)) {
             abort(403, 'This area is restricted to administrators only.');
         }
 

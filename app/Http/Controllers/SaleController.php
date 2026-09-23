@@ -6,29 +6,35 @@ use App\Models\Order;
 use App\Models\Sale;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
     public function store(Request $request, Order $order)
     {
+        $alreadyPaid = round((float) $order->sales()->sum('amount'), 2);
+        $maxAllowed = round((float) $order->total_amount - $alreadyPaid, 2);
+
         $data = $request->validate([
-            'sale_date'      => 'required|date',
-            'quantity_kg'    => 'required|numeric|min:0.01',
-            'amount'         => 'required|numeric|min:0.01',
+            'sale_date' => 'required|date',
+            'quantity_kg' => 'required|numeric|min:0.01',
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:'.$maxAllowed],
             'payment_method' => 'required|in:Cash,GCash,Maya,Bank Transfer,Cheque,Other',
-            'remarks'        => 'nullable|string',
+            'remarks' => 'nullable|string',
         ]);
 
-        $data['order_id']    = $order->id;
+        $data['order_id'] = $order->id;
         $data['customer_id'] = $order->customer_id;
 
-        Sale::create($data);
-        $this->syncPaymentStatus($order);
+        DB::transaction(function () use ($data, $order) {
+            Sale::create($data);
+            $this->syncPaymentStatus($order);
+        });
 
         ActivityLogger::log(
             'Sales',
             'create',
-            "Recorded ₱" . number_format($data['amount'], 2) . " payment via {$data['payment_method']} for order {$order->order_no}"
+            'Recorded ₱'.number_format($data['amount'], 2)." payment via {$data['payment_method']} for order {$order->order_no}"
         );
 
         return redirect()->route('orders.show', $order)
@@ -37,11 +43,17 @@ class SaleController extends Controller
 
     public function destroy(Order $order, Sale $sale)
     {
-        $amount = $sale->amount;
-        $sale->delete();
-        $this->syncPaymentStatus($order);
+        if ($sale->order_id !== $order->id) {
+            abort(403);
+        }
 
-        ActivityLogger::log('Sales', 'delete', "Deleted ₱" . number_format($amount, 2) . " payment record from order {$order->order_no}");
+        $amount = $sale->amount;
+        DB::transaction(function () use ($order, $sale) {
+            $sale->delete();
+            $this->syncPaymentStatus($order);
+        });
+
+        ActivityLogger::log('Sales', 'delete', 'Deleted ₱'.number_format($amount, 2)." payment record from order {$order->order_no}");
 
         return redirect()->route('orders.show', $order)
             ->with('success', 'Payment record deleted.');
@@ -49,11 +61,12 @@ class SaleController extends Controller
 
     private function syncPaymentStatus(Order $order): void
     {
-        $totalPaid = $order->sales()->sum('amount');
+        $totalPaid = round((float) $order->sales()->sum('amount'), 2);
+        $orderTotal = round((float) $order->total_amount, 2);
 
         if ($totalPaid <= 0) {
             $status = 'unpaid';
-        } elseif ($totalPaid >= $order->total_amount) {
+        } elseif ($totalPaid >= $orderTotal) {
             $status = 'paid';
         } else {
             $status = 'partial';

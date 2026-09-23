@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\CheckActiveUser;
+use App\Http\Middleware\CheckFarmFeature;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,10 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
 
         $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'admin' => AdminMiddleware::class,
+            'feature' => CheckFarmFeature::class,
         ]);
         // Kick deactivated users out on every web request
-        $middleware->appendToGroup('web', \App\Http\Middleware\CheckActiveUser::class);
+        $middleware->appendToGroup('web', CheckActiveUser::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
