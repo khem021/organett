@@ -3,6 +3,13 @@ set -e
 
 cd /var/www/html
 
+# Render's generated 256-bit value is base64 without Laravel's required prefix.
+# Normalize only 44-character generated values before Laravel caches config.
+if [ -n "${APP_KEY:-}" ] && [ "${APP_KEY#base64:}" = "$APP_KEY" ] && [ "${#APP_KEY}" -eq 44 ]; then
+    APP_KEY="base64:$APP_KEY"
+    export APP_KEY
+fi
+
 echo "=========================================="
 echo "  Organett — Starting up"
 echo "=========================================="
@@ -21,17 +28,13 @@ php artisan storage:link --force 2>/dev/null || true
 echo "--> Running database migrations..."
 php artisan migrate --force
 
-# ── 4. Seed demo data (safe to run multiple times — uses insertOrIgnore) ─────
-echo "--> Seeding initial data..."
-php artisan db:seed --force
-
-# ── 5. Start PHP-FPM as a background daemon ──────────────────────────────────
+# Start PHP-FPM as a background daemon
 echo "--> Starting PHP-FPM..."
 php-fpm -D
 
 # Give PHP-FPM a moment to bind on port 9000
 sleep 2
 
-# ── 6. Start Nginx in the foreground (PID 1) ─────────────────────────────────
+# Start Nginx in the foreground (PID 1)
 echo "--> Nginx listening on :8080"
 exec nginx -g 'daemon off;'
