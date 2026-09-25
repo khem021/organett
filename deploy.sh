@@ -202,10 +202,9 @@ ok "Vite assets built"
 php8.4 artisan storage:link --force > /dev/null
 ok "Storage symlink created"
 
-# Database migrations + seed
+# Database migrations (no demo seed in production)
 php8.4 artisan migrate --force
-php8.4 artisan db:seed --force
-ok "Database migrated and seeded"
+ok "Database migrated"
 
 # Laravel production caches
 php8.4 artisan config:cache
@@ -309,9 +308,8 @@ echo -e "    Database : ${DB_NAME}"
 echo -e "    Username : ${DB_USER}"
 echo -e "    Password : ${DB_PASS}"
 echo ""
-echo -e "  ${Y}Default logins:${N}"
-echo -e "    Admin  →  admin@organett.local  /  admin123"
-echo -e "    Staff  →  staff@organett.local  /  staff123"
+echo -e "  ${Y}Create your first admin account:${N}"
+echo -e "    cd ${APP_DIR} && php8.4 artisan organett:create-superadmin"
 echo ""
 if [ -n "$MAIL_USERNAME" ] && [ -n "$MAIL_PASSWORD" ]; then
 echo -e "  ${G}Mail:${N}         Gmail SMTP enabled (${MAIL_USERNAME})"

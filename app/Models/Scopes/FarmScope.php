@@ -12,12 +12,24 @@ class FarmScope implements Scope
     public function apply(Builder $builder, Model $model): void
     {
         if (! Auth::check()) {
+            // Migrations, seeders and artisan commands run without a user; web requests must not.
+            if (! app()->runningInConsole()) {
+                $builder->whereRaw('1 = 0');
+            }
+
             return;
         }
 
         $user = Auth::user();
 
         if ($user->role === 'super_admin') {
+            return;
+        }
+
+        // A farm user with no farm would otherwise match every NULL-farm row.
+        if ($user->farm_id === null) {
+            $builder->whereRaw('1 = 0');
+
             return;
         }
 

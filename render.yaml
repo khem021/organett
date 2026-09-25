@@ -7,7 +7,7 @@ services:
     runtime: docker
     plan: free          # Free plan sleeps after 15 min inactivity; use Starter for always-on
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /login
+    healthCheckPath: /up
 
     envVars:
       # ── Application ─────────────────────────────────────────────────────────
@@ -39,6 +39,12 @@ services:
       # ── Session / Cache / Queue ───────────────────────────────────────────────
       - key: SESSION_DRIVER
         value: database   # sessions table created by migration
+      - key: SESSION_SECURE_COOKIE
+        value: "true"     # cookie only sent over HTTPS
+      - key: SESSION_ENCRYPT
+        value: "true"
+      - key: SESSION_LIFETIME
+        value: "60"       # minutes of inactivity before re-login
       - key: CACHE_STORE
         value: file       # file cache — no extra migration required
       - key: QUEUE_CONNECTION
@@ -48,10 +54,10 @@ services:
       - key: LOG_CHANNEL
         value: stderr     # Render captures stderr as structured logs
       - key: LOG_LEVEL
-        value: error
+        value: warning    # includes failed-login warnings (auth.failed)
 
       # ── Misc ─────────────────────────────────────────────────────────────────
       - key: FILESYSTEM_DISK
         value: local
       - key: BCRYPT_ROUNDS
-        value: "10"       # Slightly faster hashing on constrained free-tier CPU
+        value: "12"

@@ -91,7 +91,7 @@
                     </td>
                     <td style="white-space:nowrap;">
                         <button class="btn-sm btn-sm-yellow"
-                            onclick="openEdit({{ $item->id }}, '{{ addslashes($item->item_name) }}', '{{ addslashes($item->category) }}', '{{ addslashes($item->unit) }}', {{ $item->reorder_level }}, '{{ addslashes($item->location ?? '') }}')">
+                            onclick="openEdit({{ $item->id }}, @js($item->item_name), @js($item->category), @js($item->unit), @js($item->reorder_level), @js($item->location ?? ''))">
                             Edit
                         </button>
                         <button class="btn-sm btn-sm-green"

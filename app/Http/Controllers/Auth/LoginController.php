@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
@@ -23,6 +24,8 @@ class LoginController extends Controller
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            Log::warning('auth.failed', ['email' => $credentials['email'], 'ip' => $request->ip()]);
+
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);

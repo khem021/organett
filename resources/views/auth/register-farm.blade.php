@@ -62,7 +62,7 @@ label { margin-bottom: .4rem; }
             <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <input id="password" type="password" name="password" required autocomplete="new-password" placeholder="Min. 8 characters" class="{{ $errors->has('password') ? 'is-error' : '' }}">
+            <input id="password" type="password" name="password" required autocomplete="new-password" placeholder="Min. 10 chars, Aa, 1, symbol" class="{{ $errors->has('password') ? 'is-error' : '' }}">
         </div>
         @error('password')<p class="error-msg">{{ $message }}</p>@enderror
     </div>

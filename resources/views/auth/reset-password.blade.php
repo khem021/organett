@@ -44,13 +44,13 @@ label { margin-bottom: .5rem; }
             </svg>
             <input id="password" type="password" name="password"
                    required autocomplete="new-password"
-                   placeholder="Min. 8 characters"
+                   placeholder="Min. 10 characters"
                    class="{{ $errors->has('password') ? 'is-error' : '' }}">
         </div>
         @error('password')
             <p class="error-msg">{{ $message }}</p>
         @enderror
-        <p class="hint">At least 8 characters</p>
+        <p class="hint">At least 10 characters with upper and lower case, a number and a symbol</p>
     </div>
     <div class="field">
         <label for="password_confirmation">Confirm new password</label>

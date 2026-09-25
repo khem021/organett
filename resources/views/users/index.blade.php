@@ -81,7 +81,7 @@
                 </td>
                 <td style="white-space:nowrap;">
                     <button class="btn-sm btn-sm-blue"
-                        onclick="openEdit({{ $u->id }},'{{ addslashes($u->full_name) }}','{{ $u->role }}','{{ $u->status }}','{{ $u->profile_photo ? Storage::url($u->profile_photo) : '' }}')">
+                        onclick="openEdit({{ $u->id }}, @js($u->full_name), @js($u->role), @js($u->status), @js($u->profile_photo ? Storage::url($u->profile_photo) : ''))">
                         Edit
                     </button>
                     @if($u->id !== Auth::id())
@@ -147,7 +147,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-input" placeholder="Min. 8 chars, letters + numbers" required>
+                <input type="password" name="password" class="form-input" placeholder="Min. 10 chars, Aa, 1, symbol" required>
                 @error('password') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">

@@ -47,7 +47,7 @@ class UserController extends Controller
             'full_name' => 'required|string|max:150',
             'username' => 'required|string|max:80|unique:users|alpha_dash',
             'email' => 'required|email|unique:users',
-            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
+            'password' => ['required', 'confirmed', Password::defaults()],
             'role' => 'required|in:'.implode(',', self::ASSIGNABLE_ROLES),
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
@@ -82,7 +82,7 @@ class UserController extends Controller
             'full_name' => 'required|string|max:150',
             'role' => 'required|in:'.implode(',', self::ASSIGNABLE_ROLES),
             'status' => 'required|in:active,inactive',
-            'password' => ['nullable', 'confirmed', Password::min(8)->mixedCase()->numbers()],
+            'password' => ['nullable', 'confirmed', Password::defaults()],
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 

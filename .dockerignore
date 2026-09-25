@@ -3,6 +3,23 @@
 .env.*
 !.env.example
 
+# Local data — databases, dumps and uploads must never ship in an image
+database/*.sqlite*
+storage/backups/
+storage/app/private/*
+storage/app/public/*
+*.sql
+*.sql.gz
+
+# Docs and local tool state
+*.docx
+use_case_diagram.png
+.claude/
+.jamora/
+.kilo/
+.codex/
+.cursor/
+
 # Dependencies — installed inside the container
 vendor/
 node_modules/

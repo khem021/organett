@@ -1,24 +1,43 @@
-# ── Base image: PHP 8.4 FPM on Alpine ──────────────────────────────────────
+# ── Stage 1: PHP dependencies ───────────────────────────────────────────────
+# Platform reqs are checked for real when the autoloader is dumped in the runtime stage.
+FROM composer:2 AS vendor
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-scripts \
+    --no-autoloader \
+    --prefer-dist \
+    --ignore-platform-reqs
+
+# ── Stage 2: Vite assets ────────────────────────────────────────────────────
+FROM node:22-alpine AS assets
+WORKDIR /app
+COPY package.json package-lock.json .npmrc vite.config.js ./
+RUN npm ci
+COPY resources/ resources/
+# Tailwind scans Laravel's pagination views for class names
+COPY --from=vendor /app/vendor/laravel/framework/src/Illuminate/Pagination/resources/views \
+     vendor/laravel/framework/src/Illuminate/Pagination/resources/views
+RUN npm run build
+
+# ── Stage 3: Runtime — PHP 8.4 FPM + Nginx on Alpine ────────────────────────
+# No node, npm, git or curl in the final image: less for an attacker to use.
 FROM php:8.4-fpm-alpine
 
-# ── System dependencies ─────────────────────────────────────────────────────
 RUN apk add --no-cache \
     nginx \
-    nodejs \
-    npm \
-    curl \
     libpng-dev \
     libzip-dev \
     zip \
     unzip \
-    git \
     oniguruma-dev \
     postgresql-dev \
     icu-dev \
     freetype-dev \
     libjpeg-turbo-dev
 
-# ── PHP extensions ──────────────────────────────────────────────────────────
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo \
@@ -32,39 +51,38 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         opcache \
         intl
 
-# ── OPcache tuning ──────────────────────────────────────────────────────────
+# ── PHP runtime tuning & hardening ──────────────────────────────────────────
 RUN { \
         echo 'opcache.enable=1'; \
         echo 'opcache.memory_consumption=256'; \
         echo 'opcache.max_accelerated_files=20000'; \
         echo 'opcache.revalidate_freq=0'; \
         echo 'opcache.validate_timestamps=0'; \
-    } > /usr/local/etc/php/conf.d/opcache.ini
-
-# ── Composer ─────────────────────────────────────────────────────────────────
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+    } > /usr/local/etc/php/conf.d/opcache.ini \
+    && { \
+        echo 'expose_php=Off'; \
+        echo 'display_errors=Off'; \
+        echo 'display_startup_errors=Off'; \
+        echo 'log_errors=On'; \
+        echo 'allow_url_include=Off'; \
+    } > /usr/local/etc/php/conf.d/security.ini
 
 WORKDIR /var/www/html
 
-# ── PHP dependencies (cached layer — only re-runs if composer files change) ─
-COPY composer.json composer.lock ./
-RUN composer install \
-    --no-dev \
-    --optimize-autoloader \
-    --no-interaction \
-    --no-scripts
-
-# ── Vite assets (cached layer — only re-runs if JS/CSS source changes) ──────
-COPY package.json package-lock.json vite.config.js ./
-COPY resources/ resources/
-RUN npm ci && npm run build
-
-# ── Full application source ──────────────────────────────────────────────────
+COPY --from=vendor /app/vendor vendor/
 COPY . .
-RUN composer run-script post-autoload-dump
+COPY --from=assets /app/public/build public/build/
+
+# Composer is only needed to build the autoloader; remove it afterwards.
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN composer dump-autoload --optimize --no-dev --no-interaction \
+    && rm /usr/bin/composer \
+    && rm -f public/hot
 
 # ── Storage & bootstrap permissions ─────────────────────────────────────────
 RUN mkdir -p \
+        storage/app/public \
+        storage/app/private \
         storage/logs \
         storage/framework/cache/data \
         storage/framework/sessions \
