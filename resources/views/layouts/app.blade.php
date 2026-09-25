@@ -32,6 +32,7 @@
             --danger:       #f87171;
             --warning:      #fbbf24;
             --info:         #38bdf8;
+            --scroll-shadow: #000000b3;
         }
 
         :root[data-theme="light"] {
@@ -49,6 +50,7 @@
             --danger:       #dc2626;
             --warning:      #d97706;
             --info:         #0284c7;
+            --scroll-shadow: #0000002e;
         }
         @media (prefers-color-scheme: light) {
             :root:not([data-theme="dark"]) {
@@ -66,6 +68,7 @@
                 --danger:       #dc2626;
                 --warning:      #d97706;
                 --info:         #0284c7;
+                --scroll-shadow: #0000002e;
             }
         }
 
@@ -297,6 +300,7 @@
         .main {
             margin-left: var(--sidebar-w);
             flex: 1;
+            min-width: 0; /* flex items default to min-width:auto, which lets wide tables stretch the page */
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -319,6 +323,10 @@
             font-weight: 600;
             color: var(--text);
             flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .topbar-right {
             display: flex;
@@ -371,6 +379,7 @@
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
         .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
         .grid-main { display: grid; grid-template-columns: 1fr 320px; gap: 1rem; }
+        .grid-4 > *, .grid-3 > *, .grid-2 > *, .grid-main > * { min-width: 0; }
 
         .gap-top { margin-top: 1rem; }
         .gap-top-lg { margin-top: 1.5rem; }
@@ -675,10 +684,10 @@
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
-                transition: transform .25s ease;
-                box-shadow: 8px 0 24px #000a;
+                transition: transform .25s ease, box-shadow .25s ease;
             }
-            .sidebar.open { transform: none; }
+            /* Shadow only while open, or it bleeds onto the left edge of the page */
+            .sidebar.open { transform: none; box-shadow: 8px 0 24px #000a; }
             .main { margin-left: 0; }
             .mobile-toggle { display: inline-flex; align-items: center; }
             .topbar { padding: 0 1rem; }
@@ -820,6 +829,18 @@
         .table-scroll {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+            /* Edge shadows appear only while more columns are hidden in that direction */
+            background:
+                linear-gradient(to right, var(--card-bg) 30%, transparent) left center / 2.5rem 100% no-repeat local,
+                linear-gradient(to left, var(--card-bg) 30%, transparent) right center / 2.5rem 100% no-repeat local,
+                radial-gradient(farthest-side at 0 50%, var(--scroll-shadow), transparent) left center / .875rem 100% no-repeat scroll,
+                radial-gradient(farthest-side at 100% 50%, var(--scroll-shadow), transparent) right center / .875rem 100% no-repeat scroll;
+        }
+        @media (max-width: 768px) {
+            /* One line per row in data tables; two-column detail tables (no thead) keep wrapping */
+            .table-scroll table:has(> thead) :is(th, td) { white-space: nowrap; }
+            .table-scroll td.cell-wrap { white-space: normal; min-width: 14rem; }
         }
 
         /* ── Mobile-first enhancements (≤ 768px) ── */
@@ -872,6 +893,15 @@
             .page-header-right {
                 flex-wrap: wrap;
                 gap: .375rem;
+            }
+
+            /* Top bar: keyboard-only helpers are useless on touch screens */
+            .topbar { gap: .5rem; }
+            .topbar-shortcuts-btn, .topbar-live, .topbar-search-kbd { display: none !important; }
+            .mobile-toggle, .topbar-right > button {
+                min-width: 40px;
+                min-height: 40px;
+                justify-content: center;
             }
 
             /* Reduce padding on stat cards to fit 2-column layout */
@@ -1119,9 +1149,10 @@
                         onmouseout="this.style.borderColor='var(--card-border)';this.style.color='var(--text-muted)'">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <span class="topbar-search-label" style="display:none;">Search</span>
-                    <span class="kbd-hint" style="border:none;background:transparent;padding:0;color:inherit;">/</span>
+                    <span class="kbd-hint topbar-search-kbd" style="border:none;background:transparent;padding:0;color:inherit;">/</span>
                 </button>
                 <button onclick="document.getElementById('shortcutsDialog').showModal()"
+                        class="topbar-shortcuts-btn"
                         title="Keyboard shortcuts"
                         aria-label="Keyboard shortcuts"
                         style="background:none;border:1px solid var(--card-border);border-radius:.375rem;color:var(--text-muted);cursor:pointer;padding:.25rem .5rem;display:inline-flex;align-items:center;gap:.375rem;font-size:.6875rem;font-family:inherit;transition:border-color .15s,color .15s;"
@@ -1131,7 +1162,7 @@
                     <span style="display:none;" class="topbar-shortcut-label">Shortcuts</span>
                 </button>
                 <span class="topbar-date">{{ now()->format('D, M j Y') }}</span>
-                <div style="display:flex;align-items:center;gap:.375rem;font-size:.75rem;color:var(--text-muted);">
+                <div class="topbar-live" style="display:flex;align-items:center;gap:.375rem;font-size:.75rem;color:var(--text-muted);">
                     <div class="status-dot"></div> Live
                 </div>
             </div>

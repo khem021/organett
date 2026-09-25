@@ -68,7 +68,7 @@
                 <td style="color:var(--green-light);font-weight:700;">{{ number_format($r->quantity_kg, 2) }}</td>
                 <td><span class="badge {{ $gc[$r->quality_grade] ?? 'badge-gray' }}"><span class="badge-dot"></span>Grade {{ $r->quality_grade }}</span></td>
                 <td style="font-size:.8125rem;">{{ $r->creator?->full_name ?? '—' }}</td>
-                <td style="font-size:.75rem;color:var(--text-muted);max-width:180px;">{{ Str::limit($r->notes ?? '', 80, '…') ?: '—' }}</td>
+                <td class="cell-wrap" style="font-size:.75rem;color:var(--text-muted);max-width:180px;">{{ Str::limit($r->notes ?? '', 80, '…') ?: '—' }}</td>
                 <td style="white-space:nowrap;">
                     <button class="btn-sm btn-sm-yellow"
                         onclick="openEditHarvest({{ $r->id }}, {{ $r->batch_id }}, '{{ $r->harvest_date->format('Y-m-d') }}', {{ $r->quantity_kg }}, '{{ $r->quality_grade }}', '{{ addslashes($r->notes ?? '') }}')">

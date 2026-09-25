@@ -11,9 +11,9 @@
     $gradeB       = $records->where('quality_grade','B')->sum('quantity_kg');
     $gradeC       = $records->where('quality_grade','C')->sum('quantity_kg');
     $flushCount   = $records->count();
-    $daysSince    = $batch->inoculation_date->diffInDays(now());
+    $daysSince    = (int) $batch->inoculation_date->diffInDays(now());
     $daysLeft     = now()->lt($batch->expected_harvest_date)
-                        ? now()->diffInDays($batch->expected_harvest_date)
+                        ? (int) now()->diffInDays($batch->expected_harvest_date)
                         : null;
     $isOverdue    = now()->gt($batch->expected_harvest_date) && !in_array($batch->status, ['harvested','completed','contaminated']);
     $statusMap    = ['planned'=>'badge-gray','inoculated'=>'badge-blue','fruiting'=>'badge-green','harvested'=>'badge-yellow','completed'=>'badge-green','contaminated'=>'badge-red'];

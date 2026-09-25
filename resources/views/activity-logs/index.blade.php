@@ -81,7 +81,7 @@
                 </td>
                 <td style="font-size:.75rem;color:var(--text-muted);">{{ $log->module }}</td>
                 <td><span class="badge {{ $badgeClass }}"><span class="badge-dot"></span>{{ $label }}</span></td>
-                <td style="font-size:.8125rem;color:var(--text-muted);">{{ $log->description }}</td>
+                <td class="cell-wrap" style="font-size:.8125rem;color:var(--text-muted);">{{ $log->description }}</td>
             </tr>
             @endforeach
         </tbody>

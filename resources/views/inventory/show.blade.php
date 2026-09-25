@@ -91,7 +91,7 @@
                 <td style="font-weight:700;color:{{ $tx->transaction_type === 'in' ? 'var(--green-light)' : 'var(--danger)' }};">
                     {{ $tx->transaction_type === 'in' ? '+' : '-' }}{{ number_format($tx->quantity, 2) }} {{ $inventory->unit }}
                 </td>
-                <td style="font-size:.8125rem;color:var(--text-muted);">{{ $tx->notes ?: '—' }}</td>
+                <td class="cell-wrap" style="font-size:.8125rem;color:var(--text-muted);">{{ $tx->notes ?: '—' }}</td>
                 <td style="font-size:.8125rem;">{{ $tx->creator?->full_name ?? '—' }}</td>
             </tr>
             @endforeach

@@ -174,9 +174,9 @@
 
         @push('styles')
         <style>
-        .grade-chart-layout { display:flex; align-items:center; gap:2rem; }
+        .grade-chart-layout { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:1.25rem 2rem; }
         .grade-chart-canvas { position:relative; height:200px; width:200px; flex-shrink:0; }
-        .grade-chart-legend { flex:1; display:flex; flex-direction:column; gap:.875rem; }
+        .grade-chart-legend { flex:1 1 180px; min-width:0; display:flex; flex-direction:column; gap:.875rem; }
         @media (max-width: 520px) {
             .grade-chart-layout { flex-direction:column; gap:1.25rem; }
             .grade-chart-canvas { width:160px; height:160px; }
