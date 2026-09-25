@@ -9,11 +9,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 class FarmRegistrationController extends Controller
 {
+    /** Farms that can be created from one IP per hour. Failed attempts don't count. */
+    private const MAX_FARMS_PER_HOUR = 10;
+
     public function create()
     {
         return view('auth.register-farm');
@@ -21,6 +26,15 @@ class FarmRegistrationController extends Controller
 
     public function store(Request $request)
     {
+        $capKey = 'farms-created:'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($capKey, self::MAX_FARMS_PER_HOUR)) {
+            throw ValidationException::withMessages([
+                'email' => 'Too many farms were registered from your network recently. Please try again in '
+                    .(int) ceil(RateLimiter::availableIn($capKey) / 60).' minutes.',
+            ]);
+        }
+
         $data = $request->validate([
             'farm_name' => ['required', 'string', 'max:255'],
             'full_name' => ['required', 'string', 'max:255'],
@@ -65,6 +79,8 @@ class FarmRegistrationController extends Controller
 
             return ['farm' => $farm, 'user' => $user];
         });
+
+        RateLimiter::hit($capKey, 3600);
 
         Auth::login($result['user']);
         $farm = $result['farm'];

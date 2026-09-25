@@ -54,17 +54,28 @@ class AppServiceProvider extends ServiceProvider
     {
         $email = fn (Request $request) => Str::lower(trim((string) $request->input('email')));
 
-        // Per-account limit stops distributed brute force; per-IP limit stops credential stuffing.
+        // Send the user back to the form with a readable message instead of a bare 429 page.
+        $tooMany = fn (string $what) => function (Request $request, array $headers) use ($what) {
+            $wait = (int) ($headers['Retry-After'] ?? 60);
+            $when = $wait > 90 ? ceil($wait / 60).' minutes' : $wait.' seconds';
+
+            return back()
+                ->withInput($request->except(['password', 'password_confirmation']))
+                ->withErrors(['email' => "Too many {$what}. Please try again in {$when}."]);
+        };
+
+        // Per account+IP stops guessing one password; per IP stops credential stuffing across accounts.
         RateLimiter::for('login', fn (Request $request) => [
-            Limit::perMinute(5)->by('login:'.$email($request).'|'.$request->ip()),
-            Limit::perMinute(20)->by('login-ip:'.$request->ip()),
+            Limit::perMinute(5)->by('login:'.$email($request).'|'.$request->ip())->response($tooMany('login attempts')),
+            Limit::perMinute(20)->by('login-ip:'.$request->ip())->response($tooMany('login attempts')),
         ]);
 
         RateLimiter::for('password-reset', fn (Request $request) => [
-            Limit::perMinute(3)->by('reset-ip:'.$request->ip()),
-            Limit::perHour(5)->by('reset-email:'.$email($request)),
+            Limit::perMinute(3)->by('reset-ip:'.$request->ip())->response($tooMany('reset requests')),
+            Limit::perHour(5)->by('reset-email:'.$email($request))->response($tooMany('reset requests')),
         ]);
 
-        RateLimiter::for('register', fn (Request $request) => Limit::perHour(3)->by('register:'.$request->ip()));
+        // Only guards against hammering the form; farms actually created are capped in FarmRegistrationController.
+        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(20)->by('register:'.$request->ip())->response($tooMany('sign-up attempts')));
     }
 }
