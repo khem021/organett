@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    @include('partials.theme-toggle')
     <title>@yield('title', 'Dashboard') — {{ config('app.name', 'Organett') }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -31,6 +32,51 @@
             --danger:       #f87171;
             --warning:      #fbbf24;
             --info:         #38bdf8;
+        }
+
+        :root[data-theme="light"] {
+            --bg:           #f3f4f6;
+            --sidebar-bg:   #ffffff;
+            --card-bg:      #ffffff;
+            --card-border:  #e5e7eb;
+            --green-mid:    #14532d;
+            --green-accent: #16a34a;
+            --green-light:  #15803d;
+            --green-glow:   #16a34a22;
+            --text:         #111827;
+            --text-muted:   #6b7280;
+            --text-dim:     #9ca3af;
+            --danger:       #dc2626;
+            --warning:      #d97706;
+            --info:         #0284c7;
+        }
+        @media (prefers-color-scheme: light) {
+            :root:not([data-theme="dark"]) {
+                --bg:           #f3f4f6;
+                --sidebar-bg:   #ffffff;
+                --card-bg:      #ffffff;
+                --card-border:  #e5e7eb;
+                --green-mid:    #14532d;
+                --green-accent: #16a34a;
+                --green-light:  #15803d;
+                --green-glow:   #16a34a22;
+                --text:         #111827;
+                --text-muted:   #6b7280;
+                --text-dim:     #9ca3af;
+                --danger:       #dc2626;
+                --warning:      #d97706;
+                --info:         #0284c7;
+            }
+        }
+
+        /* ── Theme toggle icon swap ── */
+        .icon-sun { display: none; }
+        .icon-moon { display: inline; }
+        :root[data-theme="light"] .icon-sun { display: inline; }
+        :root[data-theme="light"] .icon-moon { display: none; }
+        @media (prefers-color-scheme: light) {
+            :root:not([data-theme="dark"]) .icon-sun { display: inline; }
+            :root:not([data-theme="dark"]) .icon-moon { display: none; }
         }
 
         html, body { height: 100%; }
@@ -471,6 +517,27 @@
         .form-select option { background:var(--card-bg); }
         .form-textarea { resize:vertical; min-height:70px; }
         .field-error { display:block; margin-top:.3rem; font-size:.75rem; color:var(--danger); }
+
+        /* ── Global search ── */
+        .search-dialog { max-width: 560px; }
+        .search-dialog .input-wrap { position: relative; }
+        .search-dialog .input-icon {
+            position: absolute; left: .875rem; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); pointer-events: none; width: 1rem; height: 1rem;
+        }
+        .search-results { max-height: 55vh; overflow-y: auto; margin: 0 -.5rem; }
+        .search-group-label {
+            font-size: .6875rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+            color: var(--text-dim); padding: .625rem 1rem .375rem;
+        }
+        .search-result-item {
+            display: flex; flex-direction: column; gap: .125rem;
+            padding: .5625rem 1rem; border-radius: .5rem; text-decoration: none;
+            color: inherit; transition: background .1s;
+        }
+        .search-result-item:hover, .search-result-item.is-active { background: #14532d33; }
+        .search-result-title { font-size: .875rem; font-weight: 600; color: var(--text); }
+        .search-result-subtitle { font-size: .75rem; color: var(--text-muted); }
         .form-actions { display:flex; gap:.75rem; justify-content:flex-end; margin-top:1.25rem; padding-top:1.25rem; border-top:1px solid var(--card-border); }
         .btn-primary { padding:.5rem 1rem; font-size:.875rem; font-weight:600; font-family:inherit; color:#fff; background:linear-gradient(135deg,#14532d,#16a34a); border:none; border-radius:.5rem; cursor:pointer; transition:opacity .15s; }
         .btn-primary:hover { opacity:.88; }
@@ -744,9 +811,9 @@
         /* ── Selection color ── */
         ::selection { background: var(--green-accent); color: #fff; }
 
-        /* Show shortcut label on wider screens */
+        /* Show shortcut/search label on wider screens */
         @media (min-width: 900px) {
-            .topbar-shortcut-label { display: inline !important; }
+            .topbar-shortcut-label, .topbar-search-label { display: inline !important; }
         }
 
         /* ── Table horizontal scroll ── */
@@ -837,32 +904,6 @@
             }
         }
 
-        /* ── Step number badge in sidebar nav ── */
-        .nav-step-num {
-            display:inline-flex; align-items:center; justify-content:center;
-            width:1.125rem; height:1.125rem;
-            border-radius:50%;
-            background:var(--green-mid);
-            color:var(--green-light);
-            font-size:.5625rem; font-weight:700;
-            flex-shrink:0;
-            border:1px solid #1a4c2e;
-            letter-spacing:0;
-        }
-        .nav-item.active .nav-step-num {
-            background:var(--green-accent); color:#fff; border-color:var(--green-accent);
-        }
-
-        /* ── Step pill shown in the topbar title ── */
-        .step-pill {
-            display:inline-flex; align-items:center;
-            font-size:.6rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
-            color:var(--green-accent);
-            background:#16a34a12; border:1px solid #16a34a28;
-            border-radius:999px; padding:.1rem .5rem;
-            margin-left:.5rem; vertical-align:middle;
-        }
-
         /* ── Logout text label ── */
         .logout-text { font-size:.6875rem; font-weight:500; white-space:nowrap; }
     </style>
@@ -905,10 +946,9 @@
                 Dashboard
             </a>
 
-            <div class="nav-section" style="margin-top:.5rem;">Production <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.65;">· Steps 1–2</span></div>
+            <div class="nav-section" style="margin-top:.5rem;">Production</div>
 
             <a href="{{ route('batches.index') }}" class="nav-item {{ request()->routeIs('batches*') ? 'active' : '' }}">
-                <span class="nav-step-num">1</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <polygon points="12 2 2 7 12 12 22 7 12 2"/>
                     <polyline points="2 17 12 22 22 17"/>
@@ -918,7 +958,6 @@
             </a>
 
             <a href="{{ route('harvest.index') }}" class="nav-item {{ request()->routeIs('harvest*') ? 'active' : '' }}">
-                <span class="nav-step-num">2</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
@@ -929,10 +968,9 @@
                 Harvest Logs
             </a>
 
-            <div class="nav-section" style="margin-top:.5rem;">Operations <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.65;">· Steps 3–5</span></div>
+            <div class="nav-section" style="margin-top:.5rem;">Operations</div>
 
             <a href="{{ route('inventory.index') }}" class="nav-item {{ request()->routeIs('inventory*') ? 'active' : '' }}">
-                <span class="nav-step-num">3</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                 </svg>
@@ -943,7 +981,6 @@
             </a>
 
             <a href="{{ route('customers.index') }}" class="nav-item {{ request()->routeIs('customers*') ? 'active' : '' }}">
-                <span class="nav-step-num">4</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                     <circle cx="12" cy="7" r="4"/>
@@ -952,7 +989,6 @@
             </a>
 
             <a href="{{ route('orders.index') }}" class="nav-item {{ request()->routeIs('orders*') ? 'active' : '' }}">
-                <span class="nav-step-num">5</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <rect x="1" y="3" width="15" height="13"/>
                     <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
@@ -965,10 +1001,9 @@
                 @endif
             </a>
 
-            <div class="nav-section" style="margin-top:.5rem;">Analytics <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:.65;">· Step 6</span></div>
+            <div class="nav-section" style="margin-top:.5rem;">Analytics</div>
 
             <a href="{{ route('reports') }}" class="nav-item {{ request()->routeIs('reports*') ? 'active' : '' }}">
-                <span class="nav-step-num">6</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <line x1="18" y1="20" x2="18" y2="10"/>
                     <line x1="12" y1="20" x2="12" y2="4"/>
@@ -1057,8 +1092,35 @@
                     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
                 </svg>
             </button>
-            <span class="topbar-title">@yield('page-title', 'Dashboard')@if(View::hasSection('page-step')) <span class="step-pill">Step @yield('page-step') of 6</span>@endif</span>
+            <span class="topbar-title">@yield('page-title', 'Dashboard')</span>
             <div class="topbar-right">
+                <button onclick="toggleTheme()"
+                        title="Toggle light / dark mode"
+                        aria-label="Toggle color theme"
+                        style="background:none;border:1px solid var(--card-border);border-radius:.375rem;color:var(--text-muted);cursor:pointer;padding:.25rem .5rem;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;transition:border-color .15s,color .15s;"
+                        onmouseover="this.style.borderColor='var(--green-accent)';this.style.color='var(--text)'"
+                        onmouseout="this.style.borderColor='var(--card-border)';this.style.color='var(--text-muted)'">
+                    <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+                <button onclick="openSearch()"
+                        title="Search"
+                        aria-label="Search customers, orders, batches, and inventory"
+                        class="topbar-search-btn"
+                        style="background:none;border:1px solid var(--card-border);border-radius:.375rem;color:var(--text-muted);cursor:pointer;padding:.25rem .625rem;display:inline-flex;align-items:center;gap:.5rem;font-size:.75rem;font-family:inherit;transition:border-color .15s,color .15s;"
+                        onmouseover="this.style.borderColor='var(--green-accent)';this.style.color='var(--text)'"
+                        onmouseout="this.style.borderColor='var(--card-border)';this.style.color='var(--text-muted)'">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <span class="topbar-search-label" style="display:none;">Search</span>
+                    <span class="kbd-hint" style="border:none;background:transparent;padding:0;color:inherit;">/</span>
+                </button>
                 <button onclick="document.getElementById('shortcutsDialog').showModal()"
                         title="Keyboard shortcuts"
                         aria-label="Keyboard shortcuts"
@@ -1287,7 +1349,87 @@
                 e.preventDefault();
                 document.getElementById('shortcutsDialog')?.showModal();
             }
+            // / = open search
+            if (e.key === '/') {
+                e.preventDefault();
+                openSearch();
+            }
         });
+
+        // ── Global search ────────────────────────────────────────────────────
+        const SEARCH_URL = @json(route('search'));
+        let searchAbort = null, searchDebounce = null, searchInputBound = false;
+
+        function openSearch() {
+            const dialog = document.getElementById('searchDialog');
+            const input = document.getElementById('searchInput');
+            if (!searchInputBound) {
+                bindSearchInput(input);
+                searchInputBound = true;
+            }
+            dialog.showModal();
+            input.value = '';
+            input.focus();
+            renderSearchResults({ groups: [] }, true);
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function renderSearchResults(data, isEmpty) {
+            const el = document.getElementById('searchResults');
+            if (isEmpty) {
+                el.innerHTML = '<p style="font-size:.8125rem;color:var(--text-dim);text-align:center;padding:1.5rem 0;">Type at least 2 characters to search.</p>';
+                return;
+            }
+            if (!data.groups || data.groups.length === 0) {
+                el.innerHTML = '<p style="font-size:.8125rem;color:var(--text-dim);text-align:center;padding:1.5rem 0;">No matches found.</p>';
+                return;
+            }
+            let html = '';
+            data.groups.forEach(group => {
+                html += `<div class="search-group-label">${escapeHtml(group.label)}</div>`;
+                group.items.forEach(item => {
+                    html += `<a href="${escapeHtml(item.url)}" class="search-result-item">
+                        <span class="search-result-title">${escapeHtml(item.title)}</span>
+                        <span class="search-result-subtitle">${escapeHtml(item.subtitle)}</span>
+                    </a>`;
+                });
+            });
+            el.innerHTML = html;
+        }
+
+        function bindSearchInput(input) {
+            input.addEventListener('input', e => {
+                const q = e.target.value.trim();
+                clearTimeout(searchDebounce);
+                if (q.length < 2) {
+                    renderSearchResults({ groups: [] }, true);
+                    return;
+                }
+                searchDebounce = setTimeout(() => {
+                    if (searchAbort) searchAbort.abort();
+                    searchAbort = new AbortController();
+                    fetch(`${SEARCH_URL}?q=${encodeURIComponent(q)}`, {
+                        signal: searchAbort.signal,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    })
+                        .then(r => r.json())
+                        .then(data => renderSearchResults(data, false))
+                        .catch(err => { if (err.name !== 'AbortError') console.error(err); });
+                }, 200);
+            });
+
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    const first = document.querySelector('#searchResults .search-result-item');
+                    if (first) { e.preventDefault(); window.location = first.href; }
+                }
+            });
+        }
     </script>
 
     {{-- Confirm dialog (used for destructive actions) --}}
@@ -1310,6 +1452,22 @@
         </div>
     </dialog>
 
+    {{-- Global search dialog --}}
+    <dialog id="searchDialog" class="search-dialog">
+        <div class="modal-title">
+            Search
+            <button class="modal-close" onclick="this.closest('dialog').close()">×</button>
+        </div>
+        <div class="input-wrap" style="margin-bottom:.5rem;">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchInput" class="form-input" style="padding-left:2.5rem;"
+                   placeholder="Search customers, orders, batches, inventory…" autocomplete="off">
+        </div>
+        <div id="searchResults" class="search-results">
+            <p style="font-size:.8125rem;color:var(--text-dim);text-align:center;padding:1.5rem 0;">Type at least 2 characters to search.</p>
+        </div>
+    </dialog>
+
     {{-- Keyboard shortcuts dialog --}}
     <dialog id="shortcutsDialog">
         <div class="modal-title">
@@ -1317,6 +1475,9 @@
             <button class="modal-close" onclick="this.closest('dialog').close()">×</button>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
+                Search <span><span class="kbd-hint">/</span></span>
+            </div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
                 Dashboard <span><span class="kbd-hint">g</span> <span class="kbd-hint">d</span></span>
             </div>

@@ -1,7 +1,6 @@
 @extends('layouts.app')
 @section('title','Reports')
 @section('page-title','Reports & Analytics')
-@section('page-step','6')
 
 @section('content')
 

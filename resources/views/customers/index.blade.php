@@ -1,7 +1,6 @@
 @extends('layouts.app')
 @section('title','Customers')
 @section('page-title','Customers')
-@section('page-step','4')
 
 @section('content')
 <div class="page-header">

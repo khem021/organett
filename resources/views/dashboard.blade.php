@@ -370,8 +370,10 @@
 
 {{-- ── Chart.js ── --}}
 <script>
-Chart.defaults.color        = '#5a8a6a';
-Chart.defaults.borderColor  = '#1a3322';
+const themeColor = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+Chart.defaults.color        = themeColor('--text-muted');
+Chart.defaults.borderColor  = themeColor('--card-border');
 Chart.defaults.font.family  = "'Instrument Sans', ui-sans-serif, system-ui, sans-serif";
 Chart.defaults.font.size    = 11;
 
@@ -379,10 +381,10 @@ Chart.defaults.font.size    = 11;
 const yieldLabels = @json($monthlyYield->pluck('label'));
 const yieldData   = @json($monthlyYield->pluck('kg'));
 const barColors   = yieldData.map((_, i) =>
-    i === yieldData.length - 1 ? '#16a34acc' : '#14532d99'
+    i === yieldData.length - 1 ? themeColor('--green-accent') + 'cc' : themeColor('--green-mid') + '99'
 );
 const barBorders  = yieldData.map((_, i) =>
-    i === yieldData.length - 1 ? '#4ade80' : '#16a34a'
+    i === yieldData.length - 1 ? themeColor('--green-light') : themeColor('--green-accent')
 );
 
 new Chart(document.getElementById('yieldChart').getContext('2d'), {
@@ -405,19 +407,19 @@ new Chart(document.getElementById('yieldChart').getContext('2d'), {
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: '#0d1f12',
-                borderColor: '#1a3322',
+                backgroundColor: themeColor('--card-bg'),
+                borderColor: themeColor('--card-border'),
                 borderWidth: 1,
-                titleColor: '#d1fae5',
-                bodyColor: '#4ade80',
+                titleColor: themeColor('--text'),
+                bodyColor: themeColor('--green-light'),
                 callbacks: { label: ctx => ` ${ctx.parsed.y} kg` }
             }
         },
         scales: {
-            x: { grid: { color: '#1a332288' }, ticks: { color: '#5a8a6a' } },
+            x: { grid: { color: themeColor('--card-border') + '88' }, ticks: { color: themeColor('--text-muted') } },
             y: {
-                grid: { color: '#1a332288' },
-                ticks: { color: '#5a8a6a', callback: v => v + ' kg' },
+                grid: { color: themeColor('--card-border') + '88' },
+                ticks: { color: themeColor('--text-muted'), callback: v => v + ' kg' },
                 beginAtZero: true,
             }
         }
@@ -432,8 +434,8 @@ new Chart(document.getElementById('gradeChart').getContext('2d'), {
         labels: ['Grade A', 'Grade B', 'Grade C'],
         datasets: [{
             data: [{{ $gradeA }}, {{ $gradeB }}, {{ $gradeC }}],
-            backgroundColor: ['#16a34a99', '#fbbf2499', '#f8717199'],
-            borderColor:     ['#4ade80',   '#fbbf24',   '#f87171'],
+            backgroundColor: [themeColor('--green-accent') + '99', themeColor('--warning') + '99', themeColor('--danger') + '99'],
+            borderColor:     [themeColor('--green-light'), themeColor('--warning'), themeColor('--danger')],
             borderWidth: 1.5,
             hoverOffset: 6,
         }]
@@ -445,11 +447,11 @@ new Chart(document.getElementById('gradeChart').getContext('2d'), {
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: '#0d1f12',
-                borderColor: '#1a3322',
+                backgroundColor: themeColor('--card-bg'),
+                borderColor: themeColor('--card-border'),
                 borderWidth: 1,
-                titleColor: '#d1fae5',
-                bodyColor: '#4ade80',
+                titleColor: themeColor('--text'),
+                bodyColor: themeColor('--green-light'),
                 callbacks: {
                     label: ctx => ` ${ctx.parsed} kg (${Math.round(ctx.parsed / {{ $totalHarvest }} * 100)}%)`
                 }

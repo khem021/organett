@@ -1,7 +1,6 @@
 @extends('layouts.app')
 @section('title','Orders')
 @section('page-title','Orders')
-@section('page-step','5')
 
 @section('content')
 <div class="page-header">
@@ -131,6 +130,18 @@
 </div>
 
 {{-- Create Order Modal --}}
+@push('styles')
+<style>
+#create-order { padding: 1.25rem; }
+#create-order .modal-title { margin-bottom: .875rem; }
+#create-order .form-group { margin-bottom: .625rem; }
+#create-order .form-grid-2 { gap: .625rem; }
+#create-order .form-grid-2 .form-group { margin-bottom: 0; }
+#create-order .form-textarea { min-height: 44px; }
+#create-order .form-actions { margin-top: .875rem; padding-top: .875rem; }
+</style>
+@endpush
+
 <dialog id="create-order">
     <div class="modal-title">New Order <button class="modal-close" onclick="this.closest('dialog').close()">×</button></div>
     <form method="POST" action="{{ route('orders.store') }}">
@@ -190,7 +201,7 @@
                 @error('order_status') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
-        <div style="background:#0a1a0e;border:1px solid var(--card-border);border-radius:.5rem;padding:.75rem 1rem;margin-bottom:.875rem;display:flex;justify-content:space-between;">
+        <div style="background:#0a1a0e;border:1px solid var(--card-border);border-radius:.5rem;padding:.5rem .875rem;margin-bottom:.625rem;display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:.8125rem;color:var(--text-muted);">Total Amount</span>
             <span style="font-weight:700;color:var(--green-light);" id="total-display">₱0.00</span>
         </div>

@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    @include('partials.theme-toggle')
     <title>@yield('title') — {{ config('app.name', 'Organett') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
@@ -21,6 +22,48 @@
             --input-bg:     #0a1a0e;
             --input-border: #1e3a27;
             --text-muted:   #6b9a7d;
+            --text:         #d1fae5;
+            --label-color:  #a3c9b0;
+        }
+        :root[data-theme="light"] {
+            --green-dark:   #f3f4f6; /* light-mode page background, name kept to avoid touching body's var() usage */
+            --green-mid:    #14532d;
+            --green-accent: #16a34a;
+            --green-light:  #15803d;
+            --green-glow:   #16a34a22;
+            --card-bg:      #ffffff;
+            --card-border:  #e5e7eb;
+            --input-bg:     #f9fafb;
+            --input-border: #e5e7eb;
+            --text-muted:   #6b7280;
+            --text:         #111827;
+            --label-color:  #374151;
+        }
+        :root[data-theme="light"] body { background-image: none; }
+        @media (prefers-color-scheme: light) {
+            :root:not([data-theme="dark"]) {
+                --green-dark:   #f3f4f6;
+                --green-mid:    #14532d;
+                --green-accent: #16a34a;
+                --green-light:  #15803d;
+                --green-glow:   #16a34a22;
+                --card-bg:      #ffffff;
+                --card-border:  #e5e7eb;
+                --input-bg:     #f9fafb;
+                --input-border: #e5e7eb;
+                --text-muted:   #6b7280;
+                --text:         #111827;
+                --label-color:  #374151;
+            }
+            :root:not([data-theme="dark"]) body { background-image: none; }
+        }
+        .icon-sun { display: none; }
+        .icon-moon { display: inline; }
+        :root[data-theme="light"] .icon-sun { display: inline; }
+        :root[data-theme="light"] .icon-moon { display: none; }
+        @media (prefers-color-scheme: light) {
+            :root:not([data-theme="dark"]) .icon-sun { display: inline; }
+            :root:not([data-theme="dark"]) .icon-moon { display: none; }
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -61,14 +104,14 @@
         .section-label::before, .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
 
         /* Card heading text (forgot / reset) */
-        .card-title { font-size: 1.125rem; font-weight: 700; color: #d1fae5; }
+        .card-title { font-size: 1.125rem; font-weight: 700; color: var(--text); }
         .card-desc { font-size: .875rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5; }
         .hint { font-size: .75rem; color: var(--text-muted); margin-top: .375rem; }
 
         /* Fields */
         .field { margin-bottom: 1.125rem; }
         .field-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
-        label { display: block; font-size: 0.8125rem; font-weight: 500; color: #a3c9b0; }
+        label { display: block; font-size: 0.8125rem; font-weight: 500; color: var(--label-color); }
         .forgot { font-size: 0.75rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
         .forgot:hover { color: var(--green-light); }
         .input-wrap { position: relative; }
@@ -81,7 +124,7 @@
             padding: 0.625rem 0.875rem 0.625rem 2.5rem;
             font-size: 0.875rem;
             font-family: inherit;
-            color: #d1fae5;
+            color: var(--text);
             background: var(--input-bg);
             border: 1px solid var(--input-border);
             border-radius: 0.5rem;
@@ -149,6 +192,20 @@
     </style>
 </head>
 <body>
+    <button onclick="toggleTheme()" title="Toggle light / dark mode" aria-label="Toggle color theme"
+            style="position:fixed;top:1rem;right:1rem;background:none;border:1px solid var(--card-border);border-radius:.375rem;color:var(--text-muted);cursor:pointer;padding:.375rem .5rem;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;transition:border-color .15s,color .15s;z-index:10;"
+            onmouseover="this.style.borderColor='var(--green-accent)';this.style.color='var(--green-light)'"
+            onmouseout="this.style.borderColor='var(--card-border)';this.style.color='var(--text-muted)'">
+        <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+    </button>
     <div class="wrapper">
         <div class="brand">
             @hasSection('brand')

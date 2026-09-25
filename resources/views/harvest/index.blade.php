@@ -1,7 +1,6 @@
 @extends('layouts.app')
 @section('title','Harvest Logs')
 @section('page-title','Harvest Logs')
-@section('page-step','2')
 
 @section('content')
 <div class="page-header">
