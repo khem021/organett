@@ -25,7 +25,7 @@
     </div>
     <div class="stat-card">
         <div class="stat-header"><span class="stat-label">Processing</span></div>
-        <div class="stat-value" style="color:#38bdf8;">{{ $summary['processing'] }}</div>
+        <div class="stat-value" style="color:var(--info);">{{ $summary['processing'] }}</div>
     </div>
     <div class="stat-card">
         <div class="stat-header"><span class="stat-label">Revenue (Paid)</span></div>
@@ -201,7 +201,7 @@
                 @error('order_status') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
-        <div style="background:#0a1a0e;border:1px solid var(--card-border);border-radius:.5rem;padding:.5rem .875rem;margin-bottom:.625rem;display:flex;justify-content:space-between;align-items:center;">
+        <div style="background:var(--bg);border:1px solid var(--card-border);border-radius:.5rem;padding:.5rem .875rem;margin-bottom:.625rem;display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:.8125rem;color:var(--text-muted);">Total Amount</span>
             <span style="font-weight:700;color:var(--green-light);" id="total-display">₱0.00</span>
         </div>

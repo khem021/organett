@@ -64,7 +64,7 @@
 
             <div style="display:flex;flex-direction:column;gap:.625rem;">
                 @foreach($periods as $key => [$label, $desc])
-                <label style="display:flex;align-items:center;gap:.875rem;padding:.75rem 1rem;background:#0a1a0e;border:1px solid {{ in_array($key,$exportPeriods) ? 'var(--green-accent)' : 'var(--card-border)' }};border-radius:.5rem;cursor:pointer;transition:border-color .15s;" id="label-{{ $key }}">
+                <label style="display:flex;align-items:center;gap:.875rem;padding:.75rem 1rem;background:var(--bg);border:1px solid {{ in_array($key,$exportPeriods) ? 'var(--green-accent)' : 'var(--card-border)' }};border-radius:.5rem;cursor:pointer;transition:border-color .15s;" id="label-{{ $key }}">
                     <input
                         type="checkbox"
                         name="export_periods[]"
@@ -76,7 +76,7 @@
                         <div style="font-size:.875rem;font-weight:600;color:var(--text);">{{ $label }}</div>
                         <div style="font-size:.75rem;color:var(--text-muted);margin-top:.125rem;">{{ $desc }}</div>
                     </div>
-                    <span style="margin-left:auto;font-size:.6875rem;font-weight:600;padding:.15rem .5rem;border-radius:999px;background:{{ in_array($key,$exportPeriods) ? 'var(--green-mid)' : '#1a3322' }};color:{{ in_array($key,$exportPeriods) ? 'var(--green-light)' : 'var(--text-dim)' }};" id="badge-{{ $key }}">
+                    <span style="margin-left:auto;font-size:.6875rem;font-weight:600;padding:.15rem .5rem;border-radius:999px;background:{{ in_array($key,$exportPeriods) ? 'var(--green-mid)' : 'var(--card-border)' }};color:{{ in_array($key,$exportPeriods) ? 'var(--green-light)' : 'var(--text-dim)' }};" id="badge-{{ $key }}">
                         {{ in_array($key,$exportPeriods) ? 'Enabled' : 'Disabled' }}
                     </span>
                 </label>
@@ -130,7 +130,7 @@
                     @endforeach
                 </tbody>
             </table>
-            <div style="margin-top:1rem;padding:.75rem;background:#0a1a0e;border-radius:.5rem;font-size:.75rem;color:var(--text-muted);border:1px solid var(--card-border);">
+            <div style="margin-top:1rem;padding:.75rem;background:var(--bg);border-radius:.5rem;font-size:.75rem;color:var(--text-muted);border:1px solid var(--card-border);">
                 <strong style="color:var(--text);">Note:</strong> Staff can only download export formats that are enabled above. Admin can always export all formats regardless of this setting.
             </div>
         </div>
@@ -156,7 +156,7 @@ function updateLabel(key, checked) {
         badge.textContent       = 'Enabled';
     } else {
         label.style.borderColor = 'var(--card-border)';
-        badge.style.background  = '#1a3322';
+        badge.style.background  = 'var(--card-border)';
         badge.style.color       = 'var(--text-dim)';
         badge.textContent       = 'Disabled';
     }

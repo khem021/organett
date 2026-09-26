@@ -33,6 +33,8 @@
             --warning:      #fbbf24;
             --info:         #38bdf8;
             --scroll-shadow: #000000b3;
+            --input-bg:     #0a1a0e;
+            --label-color:  #a3c9b0;
         }
 
         :root[data-theme="light"] {
@@ -51,6 +53,8 @@
             --warning:      #d97706;
             --info:         #0284c7;
             --scroll-shadow: #0000002e;
+            --input-bg:     #f9fafb;
+            --label-color:  #374151;
         }
         @media (prefers-color-scheme: light) {
             :root:not([data-theme="dark"]) {
@@ -69,6 +73,8 @@
                 --warning:      #d97706;
                 --info:         #0284c7;
                 --scroll-shadow: #0000002e;
+                --input-bg:     #f9fafb;
+                --label-color:  #374151;
             }
         }
 
@@ -197,7 +203,7 @@
             padding: 0.1rem 0.4rem;
             border-radius: 999px;
         }
-        .nav-badge.danger { background: #7f1d1d; color: var(--danger); }
+        .nav-badge.danger { background: #7f1d1d33; color: var(--danger); }
 
         /* Sidebar footer */
         .sidebar-footer {
@@ -442,7 +448,7 @@
             font-size: 0.8125rem;
             color: var(--text-muted);
             padding: 0.625rem 0.75rem;
-            border-bottom: 1px solid #0f2018;
+            border-bottom: 1px solid var(--card-border);
             vertical-align: middle;
         }
         tbody tr:last-child td { border-bottom: none; }
@@ -463,7 +469,7 @@
         .badge-yellow  { background: #78350f33; color: var(--warning); }
         .badge-red     { background: #7f1d1d33; color: var(--danger); }
         .badge-blue    { background: #0c4a6e33; color: var(--info); }
-        .badge-gray    { background: #1a3322; color: var(--text-muted); }
+        .badge-gray    { background: var(--card-border); color: var(--text-muted); }
         .badge-dot {
             width: 5px; height: 5px;
             border-radius: 50%;
@@ -476,7 +482,7 @@
             align-items: flex-start;
             gap: 0.75rem;
             padding: 0.75rem 0;
-            border-bottom: 1px solid #0f2018;
+            border-bottom: 1px solid var(--card-border);
         }
         .alert-item:last-child { border-bottom: none; }
         .alert-icon {
@@ -520,8 +526,8 @@
         .form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:.875rem; }
         .form-group { display:flex; flex-direction:column; gap:.375rem; margin-bottom:.875rem; }
         .form-group:last-child { margin-bottom:0; }
-        .form-label { font-size:.8125rem; font-weight:500; color:#a3c9b0; }
-        .form-input,.form-select,.form-textarea { width:100%; padding:.5625rem .875rem; font-size:.875rem; font-family:inherit; color:#d1fae5; background:#0a1a0e; border:1px solid var(--card-border); border-radius:.5rem; outline:none; transition:border-color .15s; }
+        .form-label { font-size:.8125rem; font-weight:500; color:var(--label-color); }
+        .form-input,.form-select,.form-textarea { width:100%; padding:.5625rem .875rem; font-size:.875rem; font-family:inherit; color:var(--text); background:var(--input-bg); border:1px solid var(--card-border); border-radius:.5rem; outline:none; transition:border-color .15s; }
         .form-input:focus,.form-select:focus,.form-textarea:focus { border-color:var(--green-accent); }
         .form-select option { background:var(--card-bg); }
         .form-textarea { resize:vertical; min-height:70px; }
@@ -565,7 +571,7 @@
         .btn-sm { display:inline-flex; align-items:center; gap:.3rem; padding:.275rem .625rem; font-size:.7rem; font-weight:600; font-family:inherit; border-radius:.375rem; cursor:pointer; border:1px solid transparent; transition:all .15s; text-decoration:none; }
         .btn-sm-green { background:#14532d22; color:var(--green-light); border-color:#14532d55; }
         .btn-sm-green:hover { background:#14532d44; }
-        .btn-sm-blue { background:#0c4a6e22; color:#38bdf8; border-color:#0c4a6e55; }
+        .btn-sm-blue { background:#0c4a6e22; color:var(--info); border-color:#0c4a6e55; }
         .btn-sm-blue:hover { background:#0c4a6e44; }
         .btn-sm-red { background:#7f1d1d22; color:var(--danger); border-color:#7f1d1d55; }
         .btn-sm-red:hover { background:#7f1d1d44; }
@@ -664,7 +670,7 @@
             border-radius: 50%;
             animation: btnSpin .6s linear infinite;
         }
-        .btn-secondary.is-loading::after { border-color: #ffffff22; border-top-color: var(--text); }
+        .btn-secondary.is-loading::after { border-color: var(--card-border); border-top-color: var(--text); }
         @keyframes btnSpin { to { transform: rotate(360deg); } }
 
         /* ── Smooth nav hover transition ── */
@@ -674,7 +680,7 @@
 
         /* ── Card hover lift ── */
         .stat-card { transition: transform .2s ease, border-color .2s ease; }
-        .stat-card:hover { transform: translateY(-2px); border-color: #1e4a30; }
+        .stat-card:hover { transform: translateY(-2px); border-color: var(--green-accent); }
 
         /* ── Responsive ── */
         @media (max-width: 1024px) {
@@ -717,9 +723,9 @@
             gap: .25rem;
             font-size: .6875rem;
             font-weight: 500;
-            color: var(--text-dim);
+            color: var(--text-muted);
             padding: .125rem .375rem;
-            background: #0a1510;
+            background: var(--bg);
             border: 1px solid var(--card-border);
             border-radius: .25rem;
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -1466,8 +1472,8 @@
     {{-- Confirm dialog (used for destructive actions) --}}
     <dialog id="confirmDialog">
         <div style="display:flex;align-items:flex-start;gap:.875rem;margin-bottom:1.25rem;">
-            <div style="width:2.5rem;height:2.5rem;flex-shrink:0;background:#7f1d1d22;border:1px solid #7f1d1d55;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div style="width:2.5rem;height:2.5rem;flex-shrink:0;background:#7f1d1d22;border:1px solid #7f1d1d55;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--danger);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                     <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                 </svg>
@@ -1506,31 +1512,31 @@
             <button class="modal-close" onclick="this.closest('dialog').close()">×</button>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg);border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
                 Search <span><span class="kbd-hint">/</span></span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg);border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
                 Dashboard <span><span class="kbd-hint">g</span> <span class="kbd-hint">d</span></span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg);border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
                 Batches <span><span class="kbd-hint">g</span> <span class="kbd-hint">b</span></span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg);border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
                 Harvest <span><span class="kbd-hint">g</span> <span class="kbd-hint">h</span></span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg);border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
                 Inventory <span><span class="kbd-hint">g</span> <span class="kbd-hint">i</span></span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg);border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
                 Customers <span><span class="kbd-hint">g</span> <span class="kbd-hint">c</span></span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg);border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
                 Orders <span><span class="kbd-hint">g</span> <span class="kbd-hint">o</span></span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg);border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
                 Reports <span><span class="kbd-hint">g</span> <span class="kbd-hint">r</span></span>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#0a1510;border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:var(--bg);border-radius:.5rem;font-size:.8125rem;color:var(--text-muted);">
                 Close dialog <span><span class="kbd-hint">Esc</span></span>
             </div>
         </div>

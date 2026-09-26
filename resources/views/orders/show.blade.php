@@ -225,7 +225,7 @@
         </div>
 
         {{-- Summary box --}}
-        <div style="background:#0a1a0e;border:1px solid var(--card-border);border-radius:.5rem;padding:.75rem 1rem;margin-bottom:.875rem;font-size:.8125rem;">
+        <div style="background:var(--bg);border:1px solid var(--card-border);border-radius:.5rem;padding:.75rem 1rem;margin-bottom:.875rem;font-size:.8125rem;">
             <div style="display:flex;justify-content:space-between;margin-bottom:.25rem;">
                 <span style="color:var(--text-muted);">Order Total</span>
                 <span style="color:var(--text);">₱{{ number_format($order->total_amount,2) }}</span>

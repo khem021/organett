@@ -184,7 +184,7 @@
         </div>
         @foreach(['planned'=>'badge-gray','inoculated'=>'badge-blue','fruiting'=>'badge-green','harvested'=>'badge-yellow','completed'=>'badge-green','contaminated'=>'badge-red'] as $status => $cls)
         @if(($batchStats->get($status,0)) > 0)
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #0f2018;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--card-border);">
             <span class="badge {{ $cls }}"><span class="badge-dot"></span>{{ ucfirst($status) }}</span>
             <span style="font-size:.875rem;font-weight:700;color:var(--text);">{{ $batchStats->get($status,0) }}</span>
         </div>
@@ -197,7 +197,7 @@
         </div>
         @foreach(['A'=>['badge-green','Premium'],'B'=>['badge-yellow','Standard'],'C'=>['badge-red','Processing']] as $grade => [$cls,$label])
         @php $kg = $gradeBreakdown->get($grade, 0); @endphp
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #0f2018;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--card-border);">
             <div style="display:flex;align-items:center;gap:.5rem;">
                 <span class="badge {{ $cls }}">Grade {{ $grade }}</span>
                 <span style="font-size:.75rem;color:var(--text-muted);">{{ $label }}</span>

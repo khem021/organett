@@ -208,7 +208,7 @@
                 @error('status') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
-        <div style="background:#0a1a0e;border:1px solid var(--card-border);border-radius:.5rem;padding:.75rem 1rem;margin-bottom:.875rem;font-size:.75rem;color:var(--text-muted);">
+        <div style="background:var(--bg);border:1px solid var(--card-border);border-radius:.5rem;padding:.75rem 1rem;margin-bottom:.875rem;font-size:.75rem;color:var(--text-muted);">
             Leave password blank to keep the current password.
         </div>
         <div class="form-grid-2">

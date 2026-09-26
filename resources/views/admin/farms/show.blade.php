@@ -15,7 +15,7 @@
             @csrf @method('PATCH')
             @if($farm->status === 'active')
                 <input type="hidden" name="status" value="inactive">
-                <button type="submit" style="padding:.45rem .875rem;background:#7f1d1d33;color:#f87171;border:1px solid #f8717144;border-radius:.375rem;font-size:.8rem;cursor:pointer;">Deactivate</button>
+                <button type="submit" style="padding:.45rem .875rem;background:#7f1d1d33;color:var(--danger);border:1px solid #f8717144;border-radius:.375rem;font-size:.8rem;cursor:pointer;">Deactivate</button>
             @else
                 <input type="hidden" name="status" value="active">
                 <button type="submit" style="padding:.45rem .875rem;background:#14532d33;color:var(--green-light);border:1px solid #16a34a55;border-radius:.375rem;font-size:.8rem;cursor:pointer;">Activate</button>
@@ -71,7 +71,7 @@
                         @if($user->status === 'active')
                             <span style="font-size:.7rem;padding:.2rem .5rem;background:#14532d44;color:var(--green-light);border-radius:99px;">Active</span>
                         @else
-                            <span style="font-size:.7rem;padding:.2rem .5rem;background:#7f1d1d33;color:#f87171;border-radius:99px;">Inactive</span>
+                            <span style="font-size:.7rem;padding:.2rem .5rem;background:#7f1d1d33;color:var(--danger);border-radius:99px;">Inactive</span>
                         @endif
                     </td>
                 </tr>

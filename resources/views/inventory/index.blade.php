@@ -121,7 +121,7 @@
             Recent Transactions
         </div>
         @forelse($recent as $tx)
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:.625rem 0;border-bottom:1px solid #0f2018;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.625rem 0;border-bottom:1px solid var(--card-border);">
             <div>
                 <div style="font-size:.8125rem;font-weight:600;color:var(--text);">{{ $tx->inventoryItem?->item_name ?? '—' }}</div>
                 <div style="font-size:.7rem;color:var(--text-muted);margin-top:.125rem;">
@@ -231,7 +231,7 @@
     </div>
     <form method="POST" id="adj-form">
         @csrf
-        <div style="background:#0a1a0e;border:1px solid var(--card-border);border-radius:.5rem;padding:.875rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;">
+        <div style="background:var(--bg);border:1px solid var(--card-border);border-radius:.5rem;padding:.875rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:.8125rem;color:var(--text-muted);">Current Stock</span>
             <span style="font-size:1.25rem;font-weight:700;color:var(--green-light);" id="adj-current"></span>
         </div>
