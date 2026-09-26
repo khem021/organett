@@ -786,7 +786,7 @@
         .quick-action {
             display: flex; align-items: center; gap: .625rem;
             padding: .625rem .75rem; border-radius: .5rem;
-            background: #0a1a0e; border: 1px solid var(--card-border);
+            background: var(--bg); border: 1px solid var(--card-border);
             text-decoration: none; color: var(--text);
             font-size: .8125rem; font-weight: 500;
             transition: border-color .15s, background .15s;
