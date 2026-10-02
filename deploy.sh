@@ -68,7 +68,7 @@ apt-get update -qq
 apt-get install -y -qq \
     php8.4-fpm \
     php8.4-cli \
-    php8.4-mysql \
+    php8.4-pgsql \
     php8.4-mbstring \
     php8.4-xml \
     php8.4-curl \
@@ -87,12 +87,11 @@ apt-get install -y -qq nginx
 systemctl enable nginx
 ok "Nginx installed"
 
-# ── 4. MySQL 8 ───────────────────────────────────────────────────────────────
-step "4/10 — Installing MySQL 8"
-apt-get install -y -qq mysql-server
-systemctl start mysql
-systemctl enable mysql
-ok "MySQL installed"
+# ── 4. PostgreSQL ───────────────────────────────────────────────────────────────
+step "4/10 — Installing PostgreSQL"
+apt-get install -y -qq postgresql postgresql-contrib
+systemctl enable --now postgresql
+ok "PostgreSQL installed"
 
 # ── 5. Composer ──────────────────────────────────────────────────────────────
 step "5/10 — Installing Composer"
@@ -107,12 +106,16 @@ curl -fsSL https://deb.nodesource.com/setup_20.x | bash - > /dev/null 2>&1
 apt-get install -y -qq nodejs
 ok "Node $(node -v) / npm $(npm -v) installed"
 
-# ── 7. MySQL database ─────────────────────────────────────────────────────────
-step "7/10 — Creating MySQL database & user"
-mysql -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
-mysql -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';"
-mysql -e "FLUSH PRIVILEGES;"
+# ── 7. PostgreSQL database ─────────────────────────────────────────────────────────
+step "7/10 — Creating PostgreSQL database & user"
+if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'" | grep -q 1; then
+  sudo -u postgres psql -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';"
+else
+  sudo -u postgres psql -c "ALTER USER ${DB_USER} WITH PASSWORD '${DB_PASS}';"
+fi
+if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" | grep -q 1; then
+  sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};"
+fi
 ok "Database '${DB_NAME}' ready"
 
 # ── 8. Deploy application ────────────────────────────────────────────────────
@@ -145,9 +148,9 @@ LOG_CHANNEL=daily
 LOG_DEPRECATIONS_CHANNEL=null
 LOG_LEVEL=error
 
-DB_CONNECTION=mysql
+DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
-DB_PORT=3306
+DB_PORT=5432
 DB_DATABASE=${DB_NAME}
 DB_USERNAME=${DB_USER}
 DB_PASSWORD=${DB_PASS}
