@@ -13,7 +13,7 @@
     </span>
 
     {{-- Page buttons --}}
-    <div style="display:inline-flex;align-items:center;gap:.25rem;">
+    <div class="pagination-pages" style="display:inline-flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:.25rem;">
 
         {{-- Previous --}}
         @if ($paginator->onFirstPage())

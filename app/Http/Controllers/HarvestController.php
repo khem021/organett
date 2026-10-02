@@ -24,7 +24,9 @@ class HarvestController extends Controller
         $records = $query->paginate(15)->withQueryString();
         $batches = ProductionBatch::whereIn('status', ['fruiting', 'harvested'])->orderBy('batch_code')->get();
         $totalKg = HarvestRecord::sum('quantity_kg');
-        $monthKg = HarvestRecord::whereMonth('harvest_date', now()->month)->sum('quantity_kg');
+        $monthKg = HarvestRecord::whereMonth('harvest_date', now()->month)
+            ->whereYear('harvest_date', now()->year)
+            ->sum('quantity_kg');
 
         return view('harvest.index', compact('records', 'batches', 'totalKg', 'monthKg'));
     }

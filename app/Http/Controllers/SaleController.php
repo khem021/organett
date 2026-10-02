@@ -26,10 +26,30 @@ class SaleController extends Controller
         $data['order_id'] = $order->id;
         $data['customer_id'] = $order->customer_id;
 
-        DB::transaction(function () use ($data, $order) {
+        // $maxAllowed above was read before the transaction, so two payments
+        // submitted at once could both validate and together overpay. Re-check
+        // the balance against the locked order inside the transaction.
+        $overpaid = false;
+
+        DB::transaction(function () use ($data, $order, &$overpaid) {
+            $locked = Order::lockForUpdate()->find($order->id);
+            $paid = round((float) $locked->sales()->sum('amount'), 2);
+
+            if (round($paid + (float) $data['amount'], 2) > round((float) $locked->total_amount, 2)) {
+                $overpaid = true;
+
+                return;
+            }
+
             Sale::create($data);
-            $this->syncPaymentStatus($order);
+            $this->syncPaymentStatus($locked);
         });
+
+        if ($overpaid) {
+            return back()
+                ->withInput()
+                ->withErrors(['amount' => 'That payment would exceed the order total. Refresh and try again.']);
+        }
 
         ActivityLogger::log(
             'Sales',

@@ -970,6 +970,9 @@
             .stat-value { font-size: 1.25rem; }
             .chart-box { height: 150px !important; }
             tbody td, thead th { padding: .4375rem .375rem; }
+
+            /* Centre the wrapped page buttons rather than ragging them right */
+            .pagination-pages { justify-content: center !important; width: 100%; }
         }
 
         /* ── Safe area insets for devices with home bar (iPhone X+) ── */

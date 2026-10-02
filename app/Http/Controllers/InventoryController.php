@@ -72,7 +72,9 @@ class InventoryController extends Controller
             'item_name' => 'required|string|max:150',
             'category' => 'required|string|max:120',
             'unit' => 'required|string|max:50',
-            'reorder_level' => 'required|numeric|min:0.01',
+            // Matches the create rule — min:0.01 made existing items that were
+            // created with a 0 reorder level impossible to edit at all.
+            'reorder_level' => 'required|numeric|min:0',
             'location' => 'nullable|string|max:150',
         ]);
 
