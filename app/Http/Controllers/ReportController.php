@@ -56,9 +56,10 @@ class ReportController extends Controller
             ];
         });
 
-        // Top customers
+        // Top customers. Customers with no sales sum to NULL, and Postgres sorts
+        // NULLs first on DESC — without NULLS LAST they'd outrank real revenue.
         $topCustomers = Customer::withSum('sales as total_sales', 'amount')
-            ->orderByDesc('total_sales')
+            ->orderByRaw('total_sales DESC NULLS LAST')
             ->take(5)->get();
 
         // Harvest by grade

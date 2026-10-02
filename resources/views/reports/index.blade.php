@@ -157,8 +157,8 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             Top Customers by Revenue
         </div>
+        @php $maxSales = (float) ($topCustomers->max('total_sales') ?: 1); @endphp
         @forelse($topCustomers as $i => $c)
-        @php $maxSales = $topCustomers->first()->total_sales ?: 1; @endphp
         <div style="margin-bottom:.875rem;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.375rem;">
                 <div style="display:flex;align-items:center;gap:.5rem;">
@@ -168,7 +168,7 @@
                 <span style="font-size:.8125rem;font-weight:700;color:var(--green-light);">₱{{ number_format($c->total_sales,0) }}</span>
             </div>
             <div style="height:4px;background:var(--card-border);border-radius:999px;overflow:hidden;">
-                <div style="width:{{ round(($c->total_sales/$maxSales)*100) }}%;height:100%;background:linear-gradient(90deg,var(--green-mid),var(--green-accent));border-radius:999px;"></div>
+                <div style="width:{{ min(100, round(((float) $c->total_sales / $maxSales) * 100)) }}%;height:100%;background:linear-gradient(90deg,var(--green-mid),var(--green-accent));border-radius:999px;"></div>
             </div>
         </div>
         @empty
