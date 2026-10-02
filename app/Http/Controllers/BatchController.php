@@ -6,6 +6,7 @@ use App\Models\ProductionBatch;
 use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class BatchController extends Controller
 {
@@ -28,7 +29,15 @@ class BatchController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'batch_code' => 'required|string|max:100|unique:production_batches',
+            // The unique index is scoped to the farm, and the bare `unique:` rule
+            // ignores the tenant scope — without this a farm is refused a batch
+            // code because some other farm's record it cannot see already has it.
+            'batch_code' => [
+                'required', 'string', 'max:100',
+                Rule::unique('production_batches')->where(
+                    fn ($q) => $q->where('farm_id', Auth::user()->farm_id)
+                ),
+            ],
             'substrate_type' => 'required|string|max:150',
             'spawn_type' => 'required|string|max:150',
             'inoculation_date' => 'required|date',
