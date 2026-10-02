@@ -113,7 +113,11 @@
         }
 
         .sidebar-brand {
-            padding: 1.25rem 1.25rem 1rem;
+            /* Same height as .topbar so the brand sits on the page-title line
+               and the two bottom borders meet. */
+            height: 56px;
+            flex-shrink: 0;
+            padding: 0 1.25rem;
             border-bottom: 1px solid var(--card-border);
             display: flex;
             align-items: center;
@@ -314,6 +318,9 @@
 
         .topbar {
             height: 56px;
+            /* .main is a flex column — without this the topbar is squashed
+               below 56px as soon as the page content overflows. */
+            flex-shrink: 0;
             border-bottom: 1px solid var(--card-border);
             display: flex;
             align-items: center;
@@ -701,10 +708,20 @@
             .page-content { padding: 1rem; }
             .grid-3 { grid-template-columns: 1fr; }
             .grid-2 { grid-template-columns: 1fr; }
-            .page-header { flex-direction: column; gap: .75rem; align-items: stretch; }
+            /* Title and its action button share one row; wrap only if truly needed */
+            .page-header { flex-wrap: wrap; align-items: center; gap: .5rem; margin-bottom: .875rem; }
+            .page-header-left { flex: 1 1 60%; min-width: 0; }
+            .page-header-left h2 { font-size: 1rem; }
+            .page-header-left p { font-size: .75rem; margin-top: .125rem; }
             .page-header-right { justify-content: flex-end; }
-            .filter-bar { flex-direction: column; align-items: stretch; }
+
+            /* Two-up filter grid instead of one control per row */
+            .filter-bar { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; align-items: center; margin-bottom: .875rem; }
+            .filter-bar > .filter-input { grid-column: 1 / -1; }
+            /* A trailing button left alone on its row stretches instead of sitting half-width */
+            .filter-bar > :last-child:nth-child(even) { grid-column: 1 / -1; }
             .filter-input { min-width: 0; width: 100%; }
+            .filter-select { width: 100%; }
             table { font-size: .75rem; }
             tbody td, thead th { padding: .5rem .375rem; }
             dialog { width: 95%; max-width: 95%; padding: 1.25rem; }
@@ -911,8 +928,22 @@
             }
 
             /* Reduce padding on stat cards to fit 2-column layout */
-            .stat-card { padding: .875rem .875rem; }
+            .stat-card { padding: .75rem .8125rem; gap: .3125rem; }
             .stat-value { font-size: 1.375rem; }
+            .stat-label { font-size: .6875rem; letter-spacing: .04em; }
+            .stat-icon { width: 1.625rem; height: 1.625rem; border-radius: .375rem; }
+            .stat-icon svg { width: 14px; height: 14px; }
+            .stat-sub { font-size: .6875rem; }
+            .stat-card:hover { transform: none; }
+
+            /* Tighter cards and vertical rhythm */
+            .card { padding: .9375rem; }
+            .grid-4, .grid-3, .grid-2, .grid-main { gap: .625rem; }
+            .gap-top { margin-top: .625rem; }
+            .gap-top-lg { margin-top: .875rem; }
+
+            /* Charts: desktop heights eat a whole phone screen */
+            .chart-box { height: 170px !important; }
 
             /* Mobile-friendly form actions (stack on tiny screens) */
             .form-actions { flex-wrap: wrap; }
@@ -926,11 +957,19 @@
         /* ── Extra small phones (≤ 480px) ── */
         @media (max-width: 480px) {
             .topbar { height: 48px; }
-            .page-content { padding: .875rem; }
-            .card { padding: 1rem; }
+            .sidebar-brand { height: 48px; }
+            .page-content { padding: .75rem; }
+            .card { padding: .875rem; }
             .modal-title { font-size: .9375rem; }
-            /* Stack filter bar fully */
-            .filter-bar button, .filter-bar a { flex: 1; text-align: center; }
+            .filter-bar button, .filter-bar a { width: 100%; text-align: center; justify-content: center; }
+
+            /* The page subtitle just restates the stat cards directly below it */
+            .page-header-left p { display: none; }
+
+            .stat-card { padding: .625rem .75rem; }
+            .stat-value { font-size: 1.25rem; }
+            .chart-box { height: 150px !important; }
+            tbody td, thead th { padding: .4375rem .375rem; }
         }
 
         /* ── Safe area insets for devices with home bar (iPhone X+) ── */

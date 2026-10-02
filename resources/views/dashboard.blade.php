@@ -116,7 +116,7 @@
             </svg>
             Monthly Yield — Last 6 Months (kg)
         </div>
-        <div style="position:relative;height:220px;">
+        <div class="chart-box" style="position:relative;height:220px;">
             <canvas id="yieldChart"></canvas>
         </div>
     </div>
