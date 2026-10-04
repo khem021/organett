@@ -14,7 +14,8 @@ body {
     <div class="flash">{{ session('status') }}</div>
 @endif
 
-<div class="section-label">credentials</div>
+<h1 class="sr-only">Sign in to Organett</h1>
+<div class="section-label" aria-hidden="true">credentials</div>
 
 <form method="POST" action="{{ route('login') }}">
     @csrf

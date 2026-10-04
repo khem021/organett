@@ -43,7 +43,7 @@
     @else
     <table>
         <thead>
-            <tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr>
+            <tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr>
         </thead>
         <tbody>
             @foreach($users as $u)
@@ -51,7 +51,7 @@
                 <td>
                     <div style="display:flex;align-items:center;gap:.625rem;">
                         @if($u->profile_photo)
-                            <img src="{{ Storage::url($u->profile_photo) }}" alt="{{ $u->full_name }}" class="avatar-circle">
+                            <img src="{{ Storage::url($u->profile_photo) }}" alt="{{ $u->full_name }}" class="avatar-circle" width="32" height="32">
                         @else
                             <div class="avatar-initials" style="background:linear-gradient(135deg,{{ $u->role==='farm_admin' ? '#14532d,#16a34a' : '#0c4a6e,#38bdf8' }});">
                                 {{ strtoupper(substr($u->full_name,0,1)) }}

@@ -23,7 +23,7 @@
 @endif
 
 @if($anyOff)
-    <div role="alert" style="margin-bottom:1.25rem;padding:1rem 1.25rem;background:#7f1d1d33;border:1px solid #dc262688;border-radius:.5rem;">
+    <div role="alert" style="margin-bottom:1.25rem;padding:1rem 1.25rem;background:#7f1d1d1a;border:1px solid #dc262688;border-radius:.5rem;">
         <div style="display:flex;align-items:center;gap:.625rem;font-size:.9rem;font-weight:700;color:var(--danger);">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -53,7 +53,7 @@
                 <div style="flex:1;min-width:0;">
                     <div style="display:flex;align-items:center;gap:.625rem;">
                         <span style="font-size:.9rem;font-weight:600;color:var(--text);">{{ $meta['label'] }}</span>
-                        <span style="font-size:.6875rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;background:{{ $on ? 'var(--green-mid)' : '#7f1d1d55' }};color:{{ $on ? 'var(--green-light)' : 'var(--danger)' }};">
+                        <span style="font-size:.6875rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;background:{{ $on ? 'var(--green-soft)' : '#7f1d1d55' }};color:{{ $on ? 'var(--green-light)' : 'var(--danger)' }};">
                             {{ $on ? 'ACTIVE' : 'OFF' }}
                         </span>
                     </div>
@@ -70,7 +70,7 @@
                 </div>
 
                 <form method="POST" action="{{ route('admin.security.update') }}" style="flex-shrink:0;"
-                      @if($on) onsubmit="return confirm('Turn OFF {{ $meta['label'] }} for every farm on this platform?\n\nThis takes effect immediately for all visitors.');" @endif>
+                      @if($on) data-confirm="Turn OFF {{ $meta['label'] }} for every farm on this platform? This takes effect immediately for all visitors." data-confirm-title="Turn off protection" data-confirm-button="Turn off" @endif>
                     @csrf @method('PATCH')
                     <input type="hidden" name="key" value="{{ $key }}">
                     <input type="hidden" name="enabled" value="{{ $on ? 0 : 1 }}">
@@ -90,7 +90,7 @@
 
     <div style="display:flex;align-items:center;gap:.75rem;margin-top:1.5rem;">
         <form method="POST" action="{{ route('admin.security.update') }}"
-              onsubmit="return confirm('Turn OFF every protection listed on this page?\n\nORGANETT will stop sending security headers and stop limiting login attempts, for all farms, immediately.');">
+              data-confirm="Turn OFF every protection listed on this page? ORGANETT will stop sending security headers and stop limiting login attempts, for all farms, immediately." data-confirm-title="Turn off the security system" data-confirm-button="Turn everything off">
             @csrf @method('PATCH')
             <input type="hidden" name="key" value="all">
             <input type="hidden" name="enabled" value="0">

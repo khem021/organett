@@ -16,7 +16,7 @@
 <form method="GET" action="{{ route('harvest.index') }}">
 <div class="filter-bar">
     <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Search batch code…">
-    <select name="grade" class="filter-select" onchange="this.form.submit()">
+    <select name="grade" aria-label="Filter by grade" class="filter-select" onchange="this.form.submit()">
         <option value="">All Grades</option>
         <option value="A" @selected(request('grade')==='A')>Grade A</option>
         <option value="B" @selected(request('grade')==='B')>Grade B</option>
@@ -56,7 +56,7 @@
     @else
     <table>
         <thead>
-            <tr><th>Date</th><th>Batch</th><th>Substrate</th><th>Qty (kg)</th><th>Grade</th><th>Logged By</th><th>Notes</th><th></th></tr>
+            <tr><th>Date</th><th>Batch</th><th>Substrate</th><th>Qty (kg)</th><th>Grade</th><th>Logged By</th><th>Notes</th><th><span class="sr-only">Actions</span></th></tr>
         </thead>
         <tbody>
             @foreach($records as $r)
@@ -120,7 +120,7 @@
             </div>
             <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Quantity (kg)</label>
-                <input type="number" name="quantity_kg" class="form-input" step="0.01" min="0.01" value="{{ old('quantity_kg') }}" placeholder="0.00" required>
+                <input type="number" inputmode="decimal" max="99999999.99" name="quantity_kg" class="form-input" step="0.01" min="0.01" value="{{ old('quantity_kg') }}" placeholder="0.00" required>
                 @error('quantity_kg') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
@@ -169,7 +169,7 @@
             </div>
             <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Quantity (kg)</label>
-                <input type="number" name="quantity_kg" id="edit-harvest-qty" class="form-input" step="0.01" min="0.01" value="{{ old('quantity_kg') }}" required>
+                <input type="number" inputmode="decimal" max="99999999.99" name="quantity_kg" id="edit-harvest-qty" class="form-input" step="0.01" min="0.01" value="{{ old('quantity_kg') }}" required>
                 @error('quantity_kg') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>

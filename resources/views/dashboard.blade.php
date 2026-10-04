@@ -238,7 +238,7 @@
                 <polyline points="2 12 12 17 22 12"/>
             </svg>
             Active Batches
-            <a href="{{ route('batches.index') }}" style="margin-left:auto;font-size:.6875rem;color:var(--green-accent);text-decoration:none;font-weight:600;">View all →</a>
+            <a href="{{ route('batches.index') }}" style="margin-left:auto;font-size:.6875rem;color:var(--green-light);text-decoration:none;font-weight:600;">View all →</a>
         </div>
         @if($activeBatchList->isEmpty())
             <div class="empty-state" style="padding:2rem 1rem;">No active batches right now.</div>
@@ -376,7 +376,7 @@
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
         </svg>
         Inventory Levels
-        <a href="{{ route('inventory.index') }}" style="margin-left:auto;font-size:.6875rem;color:var(--green-accent);text-decoration:none;font-weight:600;">Manage →</a>
+        <a href="{{ route('inventory.index') }}" style="margin-left:auto;font-size:.6875rem;color:var(--green-light);text-decoration:none;font-weight:600;">Manage →</a>
     </div>
     @if($inventoryItems->isEmpty())
         <div class="empty-state">No inventory items yet.</div>

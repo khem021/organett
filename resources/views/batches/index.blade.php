@@ -17,7 +17,7 @@
 <form method="GET" action="{{ route('batches.index') }}">
 <div class="filter-bar">
     <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Search batch code…">
-    <select name="status" class="filter-select" onchange="this.form.submit()">
+    <select name="status" aria-label="Filter by status" class="filter-select" onchange="this.form.submit()">
         <option value="">All Statuses</option>
         @foreach(['planned','inoculated','fruiting','harvested','completed','contaminated'] as $s)
             <option value="{{ $s }}" @selected(request('status')===$s)>{{ ucfirst($s) }}</option>
@@ -64,7 +64,7 @@
         <thead>
             <tr>
                 <th>Batch Code</th><th>Substrate</th><th>Spawn</th><th>Status</th>
-                <th>Inoculated</th><th>Est. Harvest</th><th>Created By</th><th></th>
+                <th>Inoculated</th><th>Est. Harvest</th><th>Created By</th><th><span class="sr-only">Actions</span></th>
             </tr>
         </thead>
         <tbody>
@@ -118,7 +118,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Status</label>
-                <select name="status" class="form-select" required>
+                <select name="status" aria-label="Filter by status" class="form-select" required>
                     @foreach(['planned','inoculated','fruiting','harvested','completed','contaminated'] as $s)
                         <option value="{{ $s }}" @selected(old('status', 'planned')===$s)>{{ ucfirst($s) }}</option>
                     @endforeach

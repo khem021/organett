@@ -3,10 +3,11 @@
 @section('title', $farm->name . ' — Feature Flags')
 
 @section('content')
+<x-breadcrumbs :items="[['label' => 'All farms', 'url' => route('admin.farms.index')], ['label' => $farm->name, 'url' => route('admin.farms.show', $farm)], ['label' => 'Feature flags']]" />
+
 <div class="page-header">
     <div>
-        <a href="{{ route('admin.farms.show', $farm) }}" style="font-size:.8rem;color:var(--text-muted);text-decoration:none;">&larr; {{ $farm->name }}</a>
-        <h1 class="page-title" style="margin-top:.25rem;">Feature Flags</h1>
+        <h2 class="page-title" style="margin-top:.25rem;">Feature Flags</h2>
         <p class="page-sub">Enable or disable modules for this farm.</p>
     </div>
 </div>

@@ -15,7 +15,7 @@
 <div class="filter-bar">
     <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Search description…">
 
-    <select name="farm" class="filter-select">
+    <select name="farm" aria-label="Filter by farm" class="filter-select">
         <option value="">All Farms</option>
         <option value="platform" @selected(request('farm') === 'platform')>Platform (no farm)</option>
         @foreach($farms as $f)
@@ -23,29 +23,29 @@
         @endforeach
     </select>
 
-    <select name="module" class="filter-select">
+    <select name="module" aria-label="Filter by module" class="filter-select">
         <option value="">All Modules</option>
         @foreach($modules as $mod)
             <option value="{{ $mod }}" @selected(request('module') === $mod)>{{ $mod }}</option>
         @endforeach
     </select>
 
-    <select name="action" class="filter-select">
+    <select name="action" aria-label="Filter by action" class="filter-select">
         <option value="">All Actions</option>
         @foreach($actions as $act)
             <option value="{{ $act }}" @selected(request('action') === $act)>{{ $act }}</option>
         @endforeach
     </select>
 
-    <select name="user_id" class="filter-select">
+    <select name="user_id" aria-label="Filter by user" class="filter-select">
         <option value="">Anyone</option>
         @foreach($actors as $actor)
             <option value="{{ $actor->id }}" @selected(request('user_id') == $actor->id)>{{ $actor->full_name }}</option>
         @endforeach
     </select>
 
-    <input type="date" name="from" value="{{ request('from') }}" class="filter-input" title="From date">
-    <input type="date" name="to" value="{{ request('to') }}" class="filter-input" title="To date">
+    <input type="date" name="from" value="{{ request('from') }}" class="filter-input" title="From date" aria-label="From date">
+    <input type="date" name="to" value="{{ request('to') }}" class="filter-input" title="To date" aria-label="To date">
 
     <button type="submit" class="btn-secondary">Filter</button>
     @if(request()->hasAny(['search','farm','module','action','user_id','from','to']))

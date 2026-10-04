@@ -3,10 +3,11 @@
 @section('title', 'Archived Farms')
 
 @section('content')
+<x-breadcrumbs :items="[['label' => 'All farms', 'url' => route('admin.farms.index')], ['label' => 'Archived farms']]" />
+
 <div class="page-header">
     <div>
-        <a href="{{ route('admin.farms.index') }}" style="font-size:.8rem;color:var(--text-muted);text-decoration:none;">&larr; All Farms</a>
-        <h1 class="page-title" style="margin-top:.25rem;">Archived Farms</h1>
+        <h2 class="page-title" style="margin-top:.25rem;">Archived Farms</h2>
         <p class="page-sub">Nothing here has been deleted. Restoring a farm brings it back with its previous status and all of its data.</p>
     </div>
 </div>
@@ -41,7 +42,8 @@
                     <td style="padding:.875rem 1rem;text-align:center;color:var(--text-muted);font-size:.8rem;">{{ $farm->deleted_at->format('M d, Y') }}</td>
                     <td style="padding:.875rem 1.5rem;text-align:right;">
                         <form method="POST" action="{{ route('admin.farms.restore', $farm->id) }}" style="display:inline;"
-                              onsubmit="return confirm('Restore {{ $farm->name }}? Its users will be able to sign in again.');">
+                              data-confirm="Restore &ldquo;{{ $farm->name }}&rdquo;? Its users will be able to sign in again."
+                              data-confirm-title="Restore farm" data-confirm-button="Restore farm">
                             @csrf @method('PATCH')
                             <button type="submit" style="background:none;border:none;padding:0;font-size:.8rem;color:var(--green-light);font-weight:500;cursor:pointer;font-family:inherit;">Restore</button>
                         </form>

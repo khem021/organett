@@ -14,7 +14,7 @@
 <form method="GET" action="{{ route('activity-logs.index') }}">
 <div class="filter-bar">
     <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Search description…">
-    <select name="module" class="filter-select" onchange="this.form.submit()">
+    <select name="module" aria-label="Filter by module" class="filter-select" onchange="this.form.submit()">
         <option value="">All Modules</option>
         @foreach($modules as $mod)
             <option value="{{ $mod }}" @selected(request('module') === $mod)>{{ $mod }}</option>

@@ -3,13 +3,14 @@
 @section('page-title','Order Detail')
 
 @section('content')
+<x-breadcrumbs :items="[['label' => 'Orders', 'url' => route('orders.index')], ['label' => $order->order_no]]" />
+
 <div class="page-header">
     <div class="page-header-left">
         <h2>{{ $order->order_no }}</h2>
         <p>Placed {{ $order->order_date->format('M d, Y') }} · {{ $order->customer?->customer_name ?? '—' }}</p>
     </div>
     <div class="order-actions">
-        <a href="{{ route('orders.index') }}" class="btn-secondary" style="font-size:.875rem;padding:.45rem .9rem;">← Back</a>
         <a href="{{ route('orders.print', $order) }}" target="_blank" class="btn-secondary" style="font-size:.875rem;padding:.45rem .9rem;">Print</a>
         <button class="btn-primary" style="padding:.5rem 1rem;font-size:.875rem;" onclick="document.getElementById('record-payment').showModal()">+ Payment</button>
         <button class="btn-primary" style="padding:.5rem 1rem;font-size:.875rem;" onclick="document.getElementById('update-status').showModal()">Status</button>
@@ -147,7 +148,7 @@
                 <div class="empty-state" style="padding:1.25rem 1rem;">No payments recorded yet.</div>
             @else
             <table>
-                <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Remarks</th><th></th></tr></thead>
+                <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Remarks</th><th><span class="sr-only">Actions</span></th></tr></thead>
                 <tbody>
                     @foreach($order->sales->sortByDesc('sale_date') as $sale)
                     <tr>
@@ -204,7 +205,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Amount Paid (₱) <span style="color:var(--danger);">*</span></label>
-                <input type="number" name="amount" class="form-input" step="0.01" min="0.01"
+                <input type="number" inputmode="decimal" max="99999999.99" name="amount" class="form-input" step="0.01" min="0.01"
                        value="{{ old('amount') }}" placeholder="{{ number_format($remaining, 2) }}" required>
                 @error('amount') <span class="field-error">{{ $message }}</span> @enderror
                 @if($remaining > 0)
@@ -213,7 +214,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Quantity (kg)</label>
-                <input type="number" name="quantity_kg" class="form-input" step="0.01" min="0.01"
+                <input type="number" inputmode="decimal" max="99999999.99" name="quantity_kg" class="form-input" step="0.01" min="0.01"
                        value="{{ old('amount') !== null ? old('quantity_kg') : number_format($order->quantity_kg - $order->sales->sum('quantity_kg'), 2, '.', '') }}"
                        placeholder="{{ number_format($order->quantity_kg,2) }}">
             </div>

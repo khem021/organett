@@ -3,10 +3,11 @@
 @section('title', $farm->name . ' — Farm Detail')
 
 @section('content')
+<x-breadcrumbs :items="[['label' => 'All farms', 'url' => route('admin.farms.index')], ['label' => $farm->name]]" />
+
 <div class="page-header">
     <div>
-        <a href="{{ route('admin.farms.index') }}" style="font-size:.8rem;color:var(--text-muted);text-decoration:none;">&larr; All Farms</a>
-        <h1 class="page-title" style="margin-top:.25rem;">{{ $farm->name }}</h1>
+        <h2 class="page-title" style="margin-top:.25rem;">{{ $farm->name }}</h2>
         <p class="page-sub">{{ $farm->slug }} &bull; Registered {{ $farm->created_at->format('M d, Y') }}</p>
     </div>
     <div style="display:flex;gap:.75rem;align-items:center;">
@@ -21,7 +22,7 @@
             @csrf @method('PATCH')
             @if($farm->status === 'active')
                 <input type="hidden" name="status" value="inactive">
-                <button type="submit" style="padding:.45rem .875rem;background:#7f1d1d33;color:var(--danger);border:1px solid #f8717144;border-radius:.375rem;font-size:.8rem;cursor:pointer;">Deactivate</button>
+                <button type="submit" style="padding:.45rem .875rem;background:#7f1d1d1a;color:var(--danger);border:1px solid #f8717144;border-radius:.375rem;font-size:.8rem;cursor:pointer;">Deactivate</button>
             @else
                 <input type="hidden" name="status" value="active">
                 <button type="submit" style="padding:.45rem .875rem;background:#14532d33;color:var(--green-light);border:1px solid #16a34a55;border-radius:.375rem;font-size:.8rem;cursor:pointer;">Activate</button>
@@ -35,11 +36,11 @@
 @endif
 
 @if(session('error'))
-    <div style="margin-bottom:1.25rem;padding:.75rem 1rem;background:#7f1d1d33;border:1px solid #f8717144;border-radius:.5rem;font-size:.875rem;color:var(--danger);">{{ session('error') }}</div>
+    <div style="margin-bottom:1.25rem;padding:.75rem 1rem;background:#7f1d1d1a;border:1px solid #f8717144;border-radius:.5rem;font-size:.875rem;color:var(--danger);">{{ session('error') }}</div>
 @endif
 
 @error('password')
-    <div style="margin-bottom:1.25rem;padding:.75rem 1rem;background:#7f1d1d33;border:1px solid #f8717144;border-radius:.5rem;font-size:.875rem;color:var(--danger);">{{ $message }}</div>
+    <div style="margin-bottom:1.25rem;padding:.75rem 1rem;background:#7f1d1d1a;border:1px solid #f8717144;border-radius:.5rem;font-size:.875rem;color:var(--danger);">{{ $message }}</div>
 @enderror
 
 {{-- Stats row --}}
@@ -86,7 +87,7 @@
                         @if($user->status === 'active')
                             <span style="font-size:.7rem;padding:.2rem .5rem;background:#14532d44;color:var(--green-light);border-radius:99px;">Active</span>
                         @else
-                            <span style="font-size:.7rem;padding:.2rem .5rem;background:#7f1d1d33;color:var(--danger);border-radius:99px;">Inactive</span>
+                            <span style="font-size:.7rem;padding:.2rem .5rem;background:#7f1d1d1a;color:var(--danger);border-radius:99px;">Inactive</span>
                         @endif
                     </td>
                     <td style="padding:.875rem 1.5rem;text-align:right;white-space:nowrap;vertical-align:top;">

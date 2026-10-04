@@ -6,7 +6,7 @@
     <title>{{ $order->order_no }} — Receipt</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700&display=swap" rel="stylesheet" />
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -249,7 +249,7 @@
     {{-- ─── RECEIPT ─────────────────────────────────────────────── --}}
     <div class="receipt-header">
         <div class="farm-logo">
-            <img src="{{ asset('logo-mushroom.png') }}" alt="Logo" class="logo-icon">
+            <img src="{{ asset('logo-mushroom.png') }}" alt="Logo" class="logo-icon" width="64" height="64">
             <div>
                 <div class="farm-name">{{ $farmName }}</div>
                 @if($farmAddress)<div class="farm-sub">{{ $farmAddress }}</div>@endif

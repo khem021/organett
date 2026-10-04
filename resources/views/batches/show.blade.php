@@ -19,6 +19,8 @@
     $statusMap    = ['planned'=>'badge-gray','inoculated'=>'badge-blue','fruiting'=>'badge-green','harvested'=>'badge-yellow','completed'=>'badge-green','contaminated'=>'badge-red'];
 @endphp
 
+<x-breadcrumbs :items="[['label' => 'Batches', 'url' => route('batches.index')], ['label' => $batch->batch_code]]" />
+
 <div class="page-header">
     <div class="page-header-left">
         <h2>{{ $batch->batch_code }}</h2>
@@ -155,7 +157,7 @@
         @else
         <table>
             <thead>
-                <tr><th>Date</th><th>Qty (kg)</th><th>Grade</th><th>Notes</th><th></th></tr>
+                <tr><th>Date</th><th>Qty (kg)</th><th>Grade</th><th>Notes</th><th><span class="sr-only">Actions</span></th></tr>
             </thead>
             <tbody>
                 @foreach($records->sortByDesc('harvest_date') as $hr)
@@ -257,7 +259,7 @@
             </div>
             <div class="form-group" style="grid-column:1/-1;">
                 <label class="form-label">Quantity (kg)</label>
-                <input type="number" name="quantity_kg" class="form-input" step="0.01" min="0.01" value="{{ old('quantity_kg') }}" placeholder="0.00" required>
+                <input type="number" inputmode="decimal" max="99999999.99" name="quantity_kg" class="form-input" step="0.01" min="0.01" value="{{ old('quantity_kg') }}" placeholder="0.00" required>
                 @error('quantity_kg') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>

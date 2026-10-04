@@ -15,7 +15,7 @@ label { margin-bottom: .5rem; }
 @endsection
 
 @section('content')
-<div class="card-title">Set new password</div>
+<h1 class="card-title">Set new password</h1>
 <form method="POST" action="{{ route('password.update') }}">
     @csrf
     <input type="hidden" name="token" value="{{ $token }}">

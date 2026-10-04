@@ -14,7 +14,8 @@ label { margin-bottom: .4rem; }
 @endsection
 
 @section('content')
-<div class="section-label">register your farm</div>
+<h1 class="sr-only">Register your farm</h1>
+<div class="section-label" aria-hidden="true">register your farm</div>
 
 <form method="POST" action="{{ route('farm.register') }}">
     @csrf

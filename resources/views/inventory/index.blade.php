@@ -20,13 +20,13 @@
 <form method="GET" action="{{ route('inventory.index') }}">
 <div class="filter-bar">
     <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Search item name…">
-    <select name="category" class="filter-select" onchange="this.form.submit()">
+    <select name="category" aria-label="Filter by category" class="filter-select" onchange="this.form.submit()">
         <option value="">All Categories</option>
         @foreach($categories as $cat)
             <option value="{{ $cat }}" @selected(request('category')===$cat)>{{ $cat }}</option>
         @endforeach
     </select>
-    <select name="filter" class="filter-select" onchange="this.form.submit()">
+    <select name="filter" aria-label="Filter by stock level" class="filter-select" onchange="this.form.submit()">
         <option value="">All Levels</option>
         <option value="low" @selected(request('filter')==='low')>Low Stock Only</option>
     </select>
@@ -68,7 +68,7 @@
         @else
         <table>
             <thead>
-                <tr><th>Item</th><th>Category</th><th>Stock</th><th>Unit</th><th>Reorder At</th><th>Location</th><th>Status</th><th></th></tr>
+                <tr><th>Item</th><th>Category</th><th>Stock</th><th>Unit</th><th>Reorder At</th><th>Location</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr>
             </thead>
             <tbody>
                 @foreach($items as $item)
@@ -161,12 +161,12 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Initial Stock</label>
-                <input type="number" name="stock_qty" class="form-input" step="0.01" min="0" value="{{ old('stock_qty', 0) }}" required>
+                <input type="number" inputmode="decimal" max="99999999.99" name="stock_qty" class="form-input" step="0.01" min="0" value="{{ old('stock_qty', 0) }}" required>
                 @error('stock_qty') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Reorder Level</label>
-                <input type="number" name="reorder_level" class="form-input" step="0.01" min="0" value="{{ old('reorder_level', 0) }}" required>
+                <input type="number" inputmode="decimal" max="99999999.99" name="reorder_level" class="form-input" step="0.01" min="0" value="{{ old('reorder_level', 0) }}" required>
                 @error('reorder_level') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group" style="grid-column:1/-1;">
@@ -206,7 +206,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Reorder Level</label>
-                <input type="number" name="reorder_level" id="edit-item-reorder" class="form-input" step="0.01" min="0.01" value="{{ old('reorder_level') }}" required>
+                <input type="number" inputmode="decimal" max="99999999.99" name="reorder_level" id="edit-item-reorder" class="form-input" step="0.01" min="0" value="{{ old('reorder_level') }}" required>
                 @error('reorder_level') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
@@ -244,7 +244,7 @@
         </div>
         <div class="form-group">
             <label class="form-label">Quantity</label>
-            <input type="number" name="quantity" class="form-input" step="0.01" min="0.01" placeholder="0.00" required>
+            <input type="number" inputmode="decimal" max="99999999.99" name="quantity" class="form-input" step="0.01" min="0.01" placeholder="0.00" required>
         </div>
         <div class="form-group">
             <label class="form-label">Notes</label>

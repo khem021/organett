@@ -19,9 +19,9 @@
         <div style="display:flex;align-items:center;gap:.625rem;flex-wrap:wrap;">
             @php
             $presets = [
-                'weekly'  => ['Weekly',  '#0c4a6e22', '#38bdf8', '#0c4a6e55'],
-                'monthly' => ['Monthly', '#14532d22', '#4ade80', '#14532d55'],
-                'yearly'  => ['Yearly',  '#78350f22', '#fbbf24', '#78350f55'],
+                'weekly'  => ['Weekly',  '#0c4a6e22', 'var(--info)', '#0c4a6e55'],
+                'monthly' => ['Monthly', '#14532d22', 'var(--green-light)', '#14532d55'],
+                'yearly'  => ['Yearly',  '#78350f22', 'var(--warning)', '#78350f55'],
             ];
             @endphp
 
@@ -40,7 +40,7 @@
             @if(count($exportPeriods) > 0)
             <div style="display:flex;align-items:center;gap:.5rem;padding:.375rem .75rem;background:var(--card-bg);border:1px solid var(--card-border);border-radius:.5rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <select id="custom-period" style="background:transparent;border:none;color:var(--text-muted);font-size:.8125rem;font-family:inherit;outline:none;cursor:pointer;">
+                <select id="custom-period" aria-label="Export period" style="background:transparent;border:none;color:var(--text-muted);font-size:.8125rem;font-family:inherit;outline:none;cursor:pointer;">
                     <option value="">Custom period…</option>
                     @foreach(['daily'=>'Daily (Last 30 days)','weekly'=>'Weekly (Last 12 weeks)','monthly'=>'Monthly (Last 12 months)','yearly'=>'Yearly (All time)'] as $key => $lbl)
                         @if(in_array($key, $exportPeriods))
@@ -48,7 +48,7 @@
                         @endif
                     @endforeach
                 </select>
-                <button onclick="exportCustom()" style="padding:.25rem .625rem;font-size:.75rem;font-weight:600;font-family:inherit;background:var(--green-mid);color:var(--green-light);border:1px solid var(--card-border);border-radius:.375rem;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">
+                <button onclick="exportCustom()" style="padding:.25rem .625rem;font-size:.75rem;font-weight:600;font-family:inherit;background:var(--green-soft);color:var(--green-light);border:1px solid var(--card-border);border-radius:.375rem;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">
                     Export
                 </button>
             </div>
@@ -162,7 +162,7 @@
         <div style="margin-bottom:.875rem;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.375rem;">
                 <div style="display:flex;align-items:center;gap:.5rem;">
-                    <span style="width:1.25rem;height:1.25rem;background:var(--green-mid);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;color:var(--green-light);">{{ $i+1 }}</span>
+                    <span style="width:1.25rem;height:1.25rem;background:var(--green-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.625rem;font-weight:700;color:var(--green-light);">{{ $i+1 }}</span>
                     <span style="font-size:.8125rem;font-weight:600;color:var(--text);">{{ $c->customer_name }}</span>
                 </div>
                 <span style="font-size:.8125rem;font-weight:700;color:var(--green-light);">₱{{ number_format($c->total_sales,0) }}</span>

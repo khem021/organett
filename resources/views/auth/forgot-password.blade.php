@@ -18,7 +18,7 @@ label { margin-bottom: .5rem; }
 @if (session('status'))
     <div class="flash">{{ session('status') }}</div>
 @endif
-<div class="card-title">Forgot your password?</div>
+<h1 class="card-title">Forgot your password?</h1>
 <div class="card-desc">Enter your email address and we'll send you a link to reset your password.</div>
 <form method="POST" action="{{ route('password.email') }}">
     @csrf

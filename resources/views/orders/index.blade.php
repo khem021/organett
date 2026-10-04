@@ -37,13 +37,13 @@
 <form method="GET" action="{{ route('orders.index') }}">
 <div class="filter-bar">
     <input type="text" name="search" value="{{ request('search') }}" class="filter-input" placeholder="Search order no. or customer…">
-    <select name="status" class="filter-select" onchange="this.form.submit()">
+    <select name="status" aria-label="Filter by status" class="filter-select" onchange="this.form.submit()">
         <option value="">All Statuses</option>
         @foreach(['pending','processing','completed','cancelled'] as $s)
             <option value="{{ $s }}" @selected(request('status')===$s)>{{ ucfirst($s) }}</option>
         @endforeach
     </select>
-    <select name="payment" class="filter-select" onchange="this.form.submit()">
+    <select name="payment" aria-label="Filter by payment status" class="filter-select" onchange="this.form.submit()">
         <option value="">All Payments</option>
         <option value="unpaid" @selected(request('payment')==='unpaid')>Unpaid</option>
         <option value="partial" @selected(request('payment')==='partial')>Partial</option>
@@ -85,7 +85,7 @@
     @else
     <table>
         <thead>
-            <tr><th>Order No.</th><th>Customer</th><th>Item</th><th>Qty (kg)</th><th>Total</th><th>Payment</th><th>Status</th><th>Delivery</th><th></th></tr>
+            <tr><th>Order No.</th><th>Customer</th><th>Item</th><th>Qty (kg)</th><th>Total</th><th>Payment</th><th>Status</th><th>Delivery</th><th><span class="sr-only">Actions</span></th></tr>
         </thead>
         <tbody>
             @foreach($orders as $order)
@@ -174,12 +174,12 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Quantity (kg)</label>
-                <input type="number" name="quantity_kg" id="qty" class="form-input" step="0.01" min="0.01" value="{{ old('quantity_kg') }}" placeholder="0.00" required oninput="calcTotal()">
+                <input type="number" inputmode="decimal" max="99999999.99" name="quantity_kg" id="qty" class="form-input" step="0.01" min="0.01" value="{{ old('quantity_kg') }}" placeholder="0.00" required oninput="calcTotal()">
                 @error('quantity_kg') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
                 <label class="form-label">Unit Price (₱/kg)</label>
-                <input type="number" name="unit_price" id="price" class="form-input" step="0.01" min="0" value="{{ old('unit_price') }}" placeholder="0.00" required oninput="calcTotal()">
+                <input type="number" inputmode="decimal" max="99999999.99" name="unit_price" id="price" class="form-input" step="0.01" min="0" value="{{ old('unit_price') }}" placeholder="0.00" required oninput="calcTotal()">
                 @error('unit_price') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">

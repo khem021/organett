@@ -52,7 +52,7 @@
                 <th>Email</th>
                 <th>Address</th>
                 <th style="text-align:center;">Orders</th>
-                <th></th>
+                <th><span class="sr-only">Actions</span></th>
             </tr>
         </thead>
         <tbody>
@@ -122,7 +122,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Phone <span style="color:var(--danger);">*</span></label>
-                <input type="text" name="phone" class="form-input" value="{{ old('phone') }}" placeholder="+63 9xx xxx xxxx" required maxlength="50">
+                <input type="text" name="phone" inputmode="tel" autocomplete="tel" class="form-input" value="{{ old('phone') }}" placeholder="+63 9xx xxx xxxx" required maxlength="50">
                 @error('phone') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>
@@ -165,7 +165,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Phone <span style="color:var(--danger);">*</span></label>
-                <input type="text" name="phone" id="edit-phone" class="form-input" value="{{ old('phone') }}" required maxlength="50">
+                <input type="text" name="phone" inputmode="tel" autocomplete="tel" id="edit-phone" class="form-input" value="{{ old('phone') }}" required maxlength="50">
                 @error('phone') <span class="field-error">{{ $message }}</span> @enderror
             </div>
         </div>

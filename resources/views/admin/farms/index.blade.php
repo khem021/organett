@@ -72,12 +72,22 @@
                             @csrf @method('PATCH')
                             <button type="submit" class="btn-primary" style="font-size:.78rem;padding:.35rem .8rem;">Approve</button>
                         </form>
-                        <form method="POST" action="{{ route('admin.farms.reject', $farm) }}" style="display:inline;"
-                              onsubmit="const r = prompt('Reason for rejecting {{ $farm->name }}? (optional)'); if (r === null) return false; this.reason.value = r;">
-                            @csrf @method('PATCH')
-                            <input type="hidden" name="reason" value="">
-                            <button type="submit" class="btn-secondary" style="font-size:.78rem;padding:.35rem .8rem;">Reject</button>
-                        </form>
+                        <button type="button" class="btn-secondary" style="font-size:.78rem;padding:.35rem .8rem;" onclick="document.getElementById('reject-{{ $farm->id }}').showModal()">Reject</button>
+                        <dialog id="reject-{{ $farm->id }}" style="text-align:left;white-space:normal;">
+                            <div class="modal-title">Reject &ldquo;{{ $farm->name }}&rdquo;? <button type="button" class="modal-close" aria-label="Close" onclick="this.closest('dialog').close()">×</button></div>
+                            <form method="POST" action="{{ route('admin.farms.reject', $farm) }}">
+                                @csrf @method('PATCH')
+                                <p style="font-size:.85rem;color:var(--text-muted);margin:0 0 1rem;line-height:1.5;">The owner will be told the registration was not approved and will not be able to sign in. You can reactivate the farm later.</p>
+                                <div class="form-group">
+                                    <label class="form-label" for="reject-reason-{{ $farm->id }}">Reason (optional, kept in the audit trail)</label>
+                                    <textarea id="reject-reason-{{ $farm->id }}" name="reason" class="form-input" rows="3" maxlength="500"></textarea>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
+                                    <button type="submit" class="btn-primary" style="background:linear-gradient(135deg,#991b1b,#dc2626);">Reject farm</button>
+                                </div>
+                            </form>
+                        </dialog>
                     </td>
                 </tr>
                 @endforeach
@@ -117,9 +127,9 @@
                         @if($farm->status === 'active')
                             <span style="display:inline-block;padding:.2rem .6rem;background:#14532d44;color:var(--green-light);border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;">Active</span>
                         @elseif($farm->status === 'inactive')
-                            <span style="display:inline-block;padding:.2rem .6rem;background:#7f1d1d33;color:var(--danger);border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;">Inactive</span>
+                            <span style="display:inline-block;padding:.2rem .6rem;background:#7f1d1d1a;color:var(--danger);border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;">Inactive</span>
                         @elseif($farm->status === 'rejected')
-                            <span style="display:inline-block;padding:.2rem .6rem;background:#7f1d1d33;color:var(--danger);border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;">Rejected</span>
+                            <span style="display:inline-block;padding:.2rem .6rem;background:#7f1d1d1a;color:var(--danger);border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;">Rejected</span>
                         @else
                             <span style="display:inline-block;padding:.2rem .6rem;background:#78350f33;color:var(--warning);border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;">Pending</span>
                         @endif
@@ -132,7 +142,8 @@
                         <a href="{{ route('admin.farms.show', $farm) }}" style="font-size:.8rem;color:var(--green-light);text-decoration:none;font-weight:500;margin-right:.75rem;">Manage</a>
                         <a href="{{ route('admin.farms.features', $farm) }}" style="font-size:.8rem;color:var(--text-muted);text-decoration:none;font-weight:500;margin-right:.75rem;">Features</a>
                         <form method="POST" action="{{ route('admin.farms.archive', $farm) }}" style="display:inline;"
-                              onsubmit="return confirm('Archive {{ $farm->name }}?\n\nIts users will be signed out and will not be able to log in. No data is deleted — you can restore it from Archived Farms.');">
+                              data-confirm="Archive &ldquo;{{ $farm->name }}&rdquo;? Its users will be signed out and will not be able to log in. No data is deleted; you can restore it from Archived Farms."
+                              data-confirm-title="Archive farm" data-confirm-button="Archive farm">
                             @csrf @method('DELETE')
                             <button type="submit" style="background:none;border:none;padding:0;font-size:.8rem;color:var(--danger);font-weight:500;cursor:pointer;font-family:inherit;">Archive</button>
                         </form>

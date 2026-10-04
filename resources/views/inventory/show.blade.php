@@ -4,12 +4,7 @@
 
 @section('content')
 
-{{-- Breadcrumb --}}
-<div style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:var(--text-muted);margin-bottom:1.25rem;">
-    <a href="{{ route('inventory.index') }}" style="color:var(--text-muted);text-decoration:none;">Inventory</a>
-    <span style="color:var(--text-dim);">/</span>
-    <span style="color:var(--text);">{{ $inventory->item_name }}</span>
-</div>
+<x-breadcrumbs :items="[['label' => 'Inventory', 'url' => route('inventory.index')], ['label' => $inventory->item_name]]" />
 
 {{-- Header --}}
 <div class="page-header">

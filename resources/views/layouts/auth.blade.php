@@ -6,7 +6,7 @@
     @include('partials.theme-toggle')
     <title>@yield('title') — {{ config('app.name', 'Organett') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700&display=swap" rel="stylesheet" />
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
@@ -31,16 +31,16 @@
             --green-dark:   #f3f4f6; /* light-mode page background, name kept to avoid touching body's var() usage */
             --green-mid:    #14532d;
             --green-accent: #16a34a;
-            --green-light:  #15803d;
+            --green-light:  #166534;
             --green-glow:   #16a34a22;
             --card-bg:      #ffffff;
             --card-border:  #e5e7eb;
             --input-bg:     #f9fafb;
             --input-border: #e5e7eb;
-            --text-muted:   #6b7280;
+            --text-muted:   #525c6b;
             --text:         #111827;
             --label-color:  #374151;
-            --danger:       #dc2626;
+            --danger:       #b91c1c;
             --danger-glow:  #dc262622;
         }
         :root[data-theme="light"] body { background-image: none; }
@@ -49,16 +49,16 @@
                 --green-dark:   #f3f4f6;
                 --green-mid:    #14532d;
                 --green-accent: #16a34a;
-                --green-light:  #15803d;
+                --green-light:  #166534;
                 --green-glow:   #16a34a22;
                 --card-bg:      #ffffff;
                 --card-border:  #e5e7eb;
                 --input-bg:     #f9fafb;
                 --input-border: #e5e7eb;
-                --text-muted:   #6b7280;
+                --text-muted:   #525c6b;
                 --text:         #111827;
                 --label-color:  #374151;
-                --danger:       #dc2626;
+                --danger:       #b91c1c;
                 --danger-glow:  #dc262622;
             }
             :root:not([data-theme="dark"]) body { background-image: none; }
@@ -110,7 +110,8 @@
         .section-label::before, .section-label::after { content: ''; flex: 1; height: 1px; background: var(--card-border); }
 
         /* Card heading text (forgot / reset) */
-        .card-title { font-size: 1.125rem; font-weight: 700; color: var(--text); }
+        .card-title { font-size: 1.125rem; font-weight: 700; color: var(--text); margin-top: 0; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
         .card-desc { font-size: .875rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5; }
         .hint { font-size: .75rem; color: var(--text-muted); margin-top: .375rem; }
 
@@ -229,13 +230,13 @@
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
     </button>
-    <div class="wrapper">
+    <main class="wrapper" id="main-content">
         <div class="brand">
             @hasSection('brand')
                 @yield('brand')
             @else
                 <a href="{{ url('/') }}">
-                    <img src="{{ asset('logo-mushroom.png') }}" alt="Organett Logo" class="brand-logo">
+                    <img src="{{ asset('logo-mushroom.png') }}" alt="Organett Logo" class="brand-logo" width="190" height="190">
                 </a>
             @endif
         </div>
@@ -243,7 +244,7 @@
             @yield('content')
         </div>
         @yield('after-card')
-    </div>
+    </main>
     <script>
         // Show / hide password: the button controls the input named in data-pw-toggle.
         document.querySelectorAll('[data-pw-toggle]').forEach(function (btn) {

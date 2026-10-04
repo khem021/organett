@@ -7,7 +7,7 @@
     <title>@yield('title', 'Dashboard') — {{ config('app.name', 'Organett') }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700&display=swap" rel="stylesheet" />
 
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -25,10 +25,11 @@
             --green-mid:    #14532d;
             --green-accent: #16a34a;
             --green-light:  #4ade80;
+            --green-soft:   #14532d;
             --green-glow:   #16a34a30;
             --text:         #d1fae5;
-            --text-muted:   #5a8a6a;
-            --text-dim:     #3a6a4a;
+            --text-muted:   #7aab8b;
+            --text-dim:     #6e9f80;
             --danger:       #f87171;
             --warning:      #fbbf24;
             --info:         #38bdf8;
@@ -44,14 +45,15 @@
             --card-border:  #e5e7eb;
             --green-mid:    #14532d;
             --green-accent: #16a34a;
-            --green-light:  #15803d;
+            --green-light:  #166534;
+            --green-soft:   #dcfce7;
             --green-glow:   #16a34a22;
             --text:         #111827;
-            --text-muted:   #6b7280;
-            --text-dim:     #9ca3af;
-            --danger:       #dc2626;
-            --warning:      #d97706;
-            --info:         #0284c7;
+            --text-muted:   #525c6b;
+            --text-dim:     #5f6877;
+            --danger:       #b91c1c;
+            --warning:      #a1480a;
+            --info:         #0369a1;
             --scroll-shadow: #0000002e;
             --input-bg:     #f9fafb;
             --label-color:  #374151;
@@ -64,14 +66,15 @@
                 --card-border:  #e5e7eb;
                 --green-mid:    #14532d;
                 --green-accent: #16a34a;
-                --green-light:  #15803d;
+                --green-light:  #166534;
+            --green-soft:   #dcfce7;
                 --green-glow:   #16a34a22;
                 --text:         #111827;
-                --text-muted:   #6b7280;
-                --text-dim:     #9ca3af;
-                --danger:       #dc2626;
-                --warning:      #d97706;
-                --info:         #0284c7;
+                --text-muted:   #525c6b;
+                --text-dim:     #5f6877;
+                --danger:       #b91c1c;
+                --warning:      #a1480a;
+                --info:         #0369a1;
                 --scroll-shadow: #0000002e;
                 --input-bg:     #f9fafb;
                 --label-color:  #374151;
@@ -207,7 +210,7 @@
             padding: 0.1rem 0.4rem;
             border-radius: 999px;
         }
-        .nav-badge.danger { background: #7f1d1d33; color: var(--danger); }
+        .nav-badge.danger { background: #7f1d1d1a; color: var(--danger); }
 
         /* Sidebar footer */
         .sidebar-footer {
@@ -331,7 +334,22 @@
             background: var(--bg);
             z-index: 50;
         }
+        .breadcrumbs ol { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; margin: 0 0 1rem; padding: 0; font-size: .8125rem; color: var(--text-muted); }
+        .breadcrumbs li + li::before { content: "\203A"; margin-right: .5rem; color: var(--text-dim); }
+        .breadcrumbs a { color: var(--text-muted); text-decoration: none; }
+        .breadcrumbs a:hover { color: var(--green-light); text-decoration: underline; }
+        .breadcrumbs a:focus-visible { outline: 2px solid var(--green-accent); outline-offset: 2px; border-radius: .125rem; }
+        .breadcrumbs [aria-current] { color: var(--text); font-weight: 600; }
+        /* An absolutely positioned child of a table cell must be contained by the table, or it escapes the
+           horizontal-scroll wrapper and widens the whole page by the column's offset. */
+        table, .table-scroll { position: relative; }
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+        }
+        #main-content:focus { outline: none; }
         .topbar-title {
+            margin: 0;
             font-size: 1rem;
             font-weight: 600;
             color: var(--text);
@@ -472,10 +490,10 @@
             padding: 0.2rem 0.55rem;
             border-radius: 999px;
         }
-        .badge-green   { background: #14532d33; color: var(--green-light); }
-        .badge-yellow  { background: #78350f33; color: var(--warning); }
-        .badge-red     { background: #7f1d1d33; color: var(--danger); }
-        .badge-blue    { background: #0c4a6e33; color: var(--info); }
+        .badge-green   { background: #14532d1a; color: var(--green-light); }
+        .badge-yellow  { background: #78350f1a; color: var(--warning); }
+        .badge-red     { background: #7f1d1d1a; color: var(--danger); }
+        .badge-blue    { background: #0c4a6e1a; color: var(--info); }
         .badge-gray    { background: var(--card-border); color: var(--text-muted); }
         .badge-dot {
             width: 5px; height: 5px;
@@ -557,7 +575,7 @@
             padding: .5625rem 1rem; border-radius: .5rem; text-decoration: none;
             color: inherit; transition: background .1s;
         }
-        .search-result-item:hover, .search-result-item.is-active { background: #14532d33; }
+        .search-result-item:hover, .search-result-item.is-active { background: #14532d1a; }
         .search-result-title { font-size: .875rem; font-weight: 600; color: var(--text); }
         .search-result-subtitle { font-size: .75rem; color: var(--text-muted); }
         .form-actions { display:flex; gap:.75rem; justify-content:flex-end; margin-top:1.25rem; padding-top:1.25rem; border-top:1px solid var(--card-border); }
@@ -821,7 +839,7 @@
         .filter-pill {
             display: inline-flex; align-items: center; gap: .3rem;
             font-size: .6875rem; font-weight: 600; padding: .2rem .6rem;
-            background: #14532d33; color: var(--green-light);
+            background: #14532d1a; color: var(--green-light);
             border: 1px solid #16a34a44; border-radius: 999px;
         }
         .filter-pill a { color: var(--text-muted); text-decoration: none; margin-left: .2rem; }
@@ -1051,6 +1069,12 @@
 
             @else
 
+            @php
+                $navFarm = Auth::user()->farm;
+                $navReports = $navFarm?->hasFeature('reports') ?? true;
+                $navLogs = $navFarm?->hasFeature('activity_logs') ?? true;
+            @endphp
+
             <div class="nav-section">Main</div>
 
             <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -1116,6 +1140,7 @@
                 @endif
             </a>
 
+            @if($navReports)
             <div class="nav-section" style="margin-top:.5rem;">Analytics</div>
 
             <a href="{{ route('reports') }}" class="nav-item {{ request()->routeIs('reports*') ? 'active' : '' }}">
@@ -1126,10 +1151,12 @@
                 </svg>
                 Reports
             </a>
+            @endif
 
             @if(Auth::check() && in_array(Auth::user()->role, ['admin', 'farm_admin']))
             <div class="nav-section" style="margin-top:.5rem;">Admin</div>
 
+            @if($navLogs)
             <a href="{{ route('activity-logs.index') }}" class="nav-item {{ request()->routeIs('activity-logs*') ? 'active' : '' }}">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -1140,6 +1167,7 @@
                 </svg>
                 Activity Log
             </a>
+            @endif
 
             <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users*') ? 'active' : '' }}">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1166,7 +1194,7 @@
         <div class="sidebar-footer">
             <div class="user-row">
                 @if(Auth::user()->profile_photo)
-                    <img src="{{ Storage::url(Auth::user()->profile_photo) }}" alt="avatar"
+                    <img src="{{ Storage::url(Auth::user()->profile_photo) }}" alt="" width="32" height="32"
                          style="width:2rem;height:2rem;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--card-border);">
                 @else
                     <div class="avatar">{{ strtoupper(substr(Auth::user()->full_name ?? 'A', 0, 1)) }}</div>
@@ -1207,7 +1235,7 @@
                     <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
                 </svg>
             </button>
-            <span class="topbar-title">@yield('page-title', 'Dashboard')</span>
+            <h1 class="topbar-title">@yield('page-title', 'Dashboard')</h1>
             <div class="topbar-right">
                 <button onclick="toggleTheme()"
                         title="Toggle light / dark mode"
@@ -1253,9 +1281,9 @@
             </div>
         </header>
 
-        <div class="page-content" id="main-content">
+        <main class="page-content" id="main-content" tabindex="-1">
             @yield('content')
-        </div>
+        </main>
     </div>
 
     {{-- Toast notifications --}}
@@ -1379,7 +1407,7 @@
             if ((isDelete || customMsg) && !form.dataset.confirmed) {
                 e.preventDefault();
                 const msg = customMsg || 'Are you sure you want to delete this? This action cannot be undone.';
-                showConfirm(msg).then(ok => {
+                showConfirm(msg, form.dataset.confirmTitle, form.dataset.confirmButton || (isDelete ? 'Delete' : '')).then(ok => {
                     if (ok) {
                         form.dataset.confirmed = '1';
                         form.requestSubmit ? form.requestSubmit() : form.submit();
@@ -1388,10 +1416,12 @@
             }
         }, true);
 
-        function showConfirm(message) {
+        function showConfirm(message, title, yesLabel) {
             return new Promise(resolve => {
                 const d = document.getElementById('confirmDialog');
                 d.querySelector('.confirm-msg').textContent = message;
+                d.querySelector('.confirm-title').textContent = title || 'Confirm action';
+                d.querySelector('.confirm-yes').textContent = yesLabel || 'Yes, continue';
                 const yes = d.querySelector('.confirm-yes');
                 const no  = d.querySelector('.confirm-no');
                 const cleanup = (val) => {
@@ -1430,6 +1460,27 @@
             w.className = 'table-scroll';
             t.parentNode.insertBefore(w, t);
             w.appendChild(t);
+
+            // Focusable (and named) only while it actually overflows, so keyboard users can scroll it
+            // with the arrow keys without gaining a pointless tab stop on tables that fit.
+            const base = (t.closest('.card')?.querySelector('.card-title, h2, h3')?.textContent || 'Table').trim().replace(/\s+/g, ' ');
+            window.__tableNames = window.__tableNames || {};
+            const seen = window.__tableNames[base] = (window.__tableNames[base] || 0) + 1;
+            const title = seen > 1 ? base + ' ' + seen : base;
+            const sync = () => {
+                const scrolls = w.scrollWidth > w.clientWidth + 1;
+                if (scrolls) {
+                    w.setAttribute('tabindex', '0');
+                    w.setAttribute('role', 'region');
+                    w.setAttribute('aria-label', title + ' (scrolls sideways)');
+                } else {
+                    w.removeAttribute('tabindex');
+                    w.removeAttribute('role');
+                    w.removeAttribute('aria-label');
+                }
+            };
+            sync();
+            if ('ResizeObserver' in window) new ResizeObserver(sync).observe(w);
         });
 
         // ── Keyboard shortcuts (g+key for navigation) ───────────────────────
@@ -1558,7 +1609,7 @@
                 </svg>
             </div>
             <div>
-                <div style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.375rem;">Confirm action</div>
+                <div class="confirm-title" style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.375rem;">Confirm action</div>
                 <p class="confirm-msg" style="font-size:.875rem;color:var(--text-muted);line-height:1.5;"></p>
             </div>
         </div>

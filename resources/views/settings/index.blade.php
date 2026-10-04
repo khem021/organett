@@ -26,8 +26,8 @@
                 Farm Information
             </div>
             <div class="form-group">
-                <label class="form-label">Farm Name</label>
-                <input type="text" name="farm_name" class="form-input" value="{{ old('farm_name', $settings->get('farm_name','')) }}" required>
+                <label class="form-label" for="farm_name">Farm Name</label>
+                <input type="text" id="farm_name" name="farm_name" class="form-input" value="{{ old('farm_name', $settings->get('farm_name','')) }}" required>
                 @error('farm_name') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-group">
@@ -76,7 +76,7 @@
                         <div style="font-size:.875rem;font-weight:600;color:var(--text);">{{ $label }}</div>
                         <div style="font-size:.75rem;color:var(--text-muted);margin-top:.125rem;">{{ $desc }}</div>
                     </div>
-                    <span style="margin-left:auto;font-size:.6875rem;font-weight:600;padding:.15rem .5rem;border-radius:999px;background:{{ in_array($key,$exportPeriods) ? 'var(--green-mid)' : 'var(--card-border)' }};color:{{ in_array($key,$exportPeriods) ? 'var(--green-light)' : 'var(--text-dim)' }};" id="badge-{{ $key }}">
+                    <span style="margin-left:auto;font-size:.6875rem;font-weight:600;padding:.15rem .5rem;border-radius:999px;background:{{ in_array($key,$exportPeriods) ? 'var(--green-soft)' : 'var(--card-border)' }};color:{{ in_array($key,$exportPeriods) ? 'var(--green-light)' : 'var(--text-dim)' }};" id="badge-{{ $key }}">
                         {{ in_array($key,$exportPeriods) ? 'Enabled' : 'Disabled' }}
                     </span>
                 </label>
@@ -151,7 +151,7 @@ function updateLabel(key, checked) {
     const badge = document.getElementById('badge-' + key);
     if (checked) {
         label.style.borderColor = 'var(--green-accent)';
-        badge.style.background  = 'var(--green-mid)';
+        badge.style.background  = 'var(--green-soft)';
         badge.style.color       = 'var(--green-light)';
         badge.textContent       = 'Enabled';
     } else {
