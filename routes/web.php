@@ -114,8 +114,16 @@ Route::middleware('auth')->group(function () {
     // ── Super admin master dashboard ─────────────────────────────────────
     Route::middleware('can:super-admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/farms', [SuperAdminFarmController::class, 'index'])->name('farms.index');
+        // Must precede /farms/{farm}, or "archived" is read as a farm id.
+        Route::get('/farms/archived', [SuperAdminFarmController::class, 'archived'])->name('farms.archived');
         Route::get('/farms/{farm}', [SuperAdminFarmController::class, 'show'])->name('farms.show');
+        Route::delete('/farms/{farm}', [SuperAdminFarmController::class, 'archive'])->name('farms.archive');
+        // withTrashed: the farm being restored is soft-deleted, so the default
+        // implicit binding would not find it.
+        Route::patch('/farms/{farm}/restore', [SuperAdminFarmController::class, 'restore'])->withTrashed()->name('farms.restore');
         Route::patch('/farms/{farm}/status', [SuperAdminFarmController::class, 'updateStatus'])->name('farms.status');
+        Route::patch('/farms/{farm}/approve', [SuperAdminFarmController::class, 'approve'])->name('farms.approve');
+        Route::patch('/farms/{farm}/reject', [SuperAdminFarmController::class, 'reject'])->name('farms.reject');
         Route::get('/farms/{farm}/features', [SuperAdminFarmController::class, 'features'])->name('farms.features');
         Route::patch('/farms/{farm}/features', [SuperAdminFarmController::class, 'updateFeatures'])->name('farms.features.update');
 

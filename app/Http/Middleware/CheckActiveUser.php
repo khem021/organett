@@ -19,10 +19,13 @@ class CheckActiveUser
         // Deactivated individual account
         $accountInactive = $user->status !== 'active';
 
-        // Suspended / pending farm — super admins have no farm and are exempt
+        // Suspended / pending farm — super admins have no farm and are exempt.
+        // An archived farm no longer resolves through the relation (SoftDeletes),
+        // so a user still carrying its farm_id must be treated as locked out too,
+        // or they would sail through this check into an empty app.
         $farmInactive = $user->role !== 'super_admin'
-            && $user->farm
-            && $user->farm->status !== 'active';
+            && $user->farm_id !== null
+            && (! $user->farm || $user->farm->status !== 'active');
 
         if ($accountInactive || $farmInactive) {
             Auth::logout();

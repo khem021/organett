@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Customer;
+use App\Models\Farm;
 use App\Models\Order;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
@@ -66,9 +67,13 @@ it('accepts a strong password on public farm registration', function () {
         'email' => 'strong@example.test',
         'password' => 'Mushr00m!Harvest',
         'password_confirmation' => 'Mushr00m!Harvest',
-    ])->assertRedirect('/dashboard');
+    ])->assertRedirect('/login');
 
     expect(User::where('email', 'strong@example.test')->value('role'))->toBe('farm_admin');
+
+    // A new farm waits for a super admin, and its owner is not signed in yet.
+    expect(Farm::where('name', 'Strong Farm')->value('status'))->toBe('pending');
+    expect(auth()->check())->toBeFalse();
 });
 
 it('does not lock out sign-up after failed attempts', function () {
@@ -84,7 +89,7 @@ it('does not lock out sign-up after failed attempts', function () {
         $this->post('/register/farm', $form('password1'))->assertSessionHasErrors('password');
     }
 
-    $this->post('/register/farm', $form('Mushr00m!Harvest'))->assertRedirect('/dashboard');
+    $this->post('/register/farm', $form('Mushr00m!Harvest'))->assertRedirect('/login');
 });
 
 it('caps how many farms one network can create per hour', function () {
@@ -97,8 +102,8 @@ it('caps how many farms one network can create per hour', function () {
     ]);
 
     foreach (range(1, 10) as $i) {
-        $register($i)->assertRedirect('/dashboard');
-        auth()->logout();
+        // Registration no longer signs anyone in, so there is nobody to log out.
+        $register($i)->assertRedirect('/login');
     }
     expect(User::where('email', 'like', 'bulk%')->count())->toBe(10);
 

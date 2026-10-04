@@ -6,7 +6,6 @@ use App\Models\Farm;
 use App\Models\FarmFeature;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -46,15 +45,17 @@ class FarmRegistrationController extends Controller
             $slug = Str::slug($data['farm_name']);
             $baseSlug = $slug;
             $i = 1;
-            while (Farm::where('slug', $slug)->exists()) {
+            // withTrashed: an archived farm keeps its slug, and farms.slug is unique.
+            while (Farm::withTrashed()->where('slug', $slug)->exists()) {
                 $slug = "{$baseSlug}-{$i}";
                 $i++;
             }
 
+            // Pending until a super admin approves it — see the admin farms screen.
             $farm = Farm::create([
                 'name' => $data['farm_name'],
                 'slug' => $slug,
-                'status' => 'active',
+                'status' => 'pending',
             ]);
 
             // Seed all default features as enabled
@@ -82,9 +83,12 @@ class FarmRegistrationController extends Controller
 
         RateLimiter::hit($capKey, 3600);
 
-        Auth::login($result['user']);
         $farm = $result['farm'];
 
-        return redirect('/dashboard')->with('status', "Welcome to Organett! Your farm '{$farm->name}' is ready.");
+        // Deliberately not signed in: CheckActiveUser logs out any farm user whose
+        // farm is not active, so logging them in here would boot them on the very
+        // next request with a confusing message.
+        return redirect('/login')->with('status', "Thanks! '{$farm->name}' has been submitted for review. "
+            .'You can sign in once a platform administrator approves it.');
     }
 }

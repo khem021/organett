@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Farm;
 use App\Models\FarmFeature;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 
 class FarmController extends Controller
@@ -15,16 +16,23 @@ class FarmController extends Controller
     public function index()
     {
         $farms = Farm::withCount(['users', 'productionBatches', 'orders'])
+            // The pending block names whoever registered the farm.
+            ->with(['users' => fn ($q) => $q->where('role', 'farm_admin')->orderBy('id')])
             ->latest()
             ->get();
 
         $stats = [
             'total' => $farms->count(),
             'active' => $farms->where('status', 'active')->count(),
+            'pending' => $farms->where('status', 'pending')->count(),
             'users' => User::whereNotNull('farm_id')->count(),
         ];
 
-        return view('admin.farms.index', compact('farms', 'stats'));
+        return view('admin.farms.index', [
+            'pendingFarms' => $farms->where('status', 'pending')->values(),
+            'farms' => $farms->where('status', '!=', 'pending')->values(),
+            'stats' => $stats,
+        ]);
     }
 
     public function show(Farm $farm)
@@ -38,9 +46,93 @@ class FarmController extends Controller
     public function updateStatus(Request $request, Farm $farm)
     {
         $request->validate(['status' => ['required', 'in:active,inactive,pending']]);
+
         $farm->update(['status' => $request->status]);
 
+        ActivityLogger::logForFarm(
+            $farm->id,
+            'Farms',
+            $request->status === 'active' ? 'enable' : 'suspend',
+            "Set farm \"{$farm->name}\" to {$request->status}.",
+        );
+
         return back()->with('status', "Farm status updated to {$request->status}.");
+    }
+
+    public function approve(Farm $farm)
+    {
+        // Guard against a double submit reviving a farm that was later suspended.
+        abort_unless($farm->status === 'pending', 409);
+
+        $farm->update(['status' => 'active']);
+
+        ActivityLogger::logForFarm($farm->id, 'Farms', 'approve', "Approved farm registration for \"{$farm->name}\".");
+
+        return back()->with('status', "'{$farm->name}' approved. Its administrator can now sign in.");
+    }
+
+    public function reject(Request $request, Farm $farm)
+    {
+        abort_unless($farm->status === 'pending', 409);
+
+        $request->validate(['reason' => ['nullable', 'string', 'max:500']]);
+
+        // There is no 'rejected' value on the farms.status enum, and widening a DB
+        // enum needs its own migration — a rejected farm is simply inactive, with
+        // the reason kept in the audit trail.
+        $farm->update(['status' => 'inactive']);
+
+        ActivityLogger::logForFarm(
+            $farm->id,
+            'Farms',
+            'reject',
+            "Rejected farm registration for \"{$farm->name}\"."
+                .($request->filled('reason') ? " Reason: {$request->reason}" : ''),
+        );
+
+        return back()->with('status', "'{$farm->name}' rejected.");
+    }
+
+    public function archived()
+    {
+        $farms = Farm::onlyTrashed()
+            ->withCount(['users', 'productionBatches', 'orders'])
+            ->orderByDesc('deleted_at')
+            ->get();
+
+        return view('admin.farms.archived', compact('farms'));
+    }
+
+    public function archive(Farm $farm)
+    {
+        // Nothing is removed: the farm and all its rows stay in place, but the
+        // farm stops resolving through relations, which is what locks its users
+        // out (see CheckActiveUser) and hides it from every listing.
+        $farm->delete();
+
+        ActivityLogger::logForFarm(
+            $farm->id,
+            'Farms',
+            'archive',
+            "Archived farm \"{$farm->name}\" ({$farm->slug}). Its users can no longer sign in.",
+        );
+
+        return redirect()
+            ->route('admin.farms.index')
+            ->with('status', "'{$farm->name}' archived. You can restore it from Archived Farms.");
+    }
+
+    public function restore(Farm $farm)
+    {
+        abort_unless($farm->trashed(), 409);
+
+        $farm->restore();
+
+        ActivityLogger::logForFarm($farm->id, 'Farms', 'restore', "Restored farm \"{$farm->name}\" from the archive.");
+
+        return redirect()
+            ->route('admin.farms.index')
+            ->with('status', "'{$farm->name}' restored with its previous status ({$farm->status}).");
     }
 
     public function features(Farm $farm)
@@ -62,6 +154,8 @@ class FarmController extends Controller
                 ['is_enabled' => $request->boolean($key)]
             );
         }
+
+        ActivityLogger::logForFarm($farm->id, 'Farms', 'update', "Updated feature flags for \"{$farm->name}\".");
 
         return back()->with('status', 'Feature settings saved.');
     }
