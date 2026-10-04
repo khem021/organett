@@ -184,12 +184,8 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Payment Status</label>
-                <select name="payment_status" class="form-select" required>
-                    <option value="unpaid" @selected(old('payment_status', 'unpaid')==='unpaid')>Unpaid</option>
-                    <option value="partial" @selected(old('payment_status')==='partial')>Partial</option>
-                    <option value="paid" @selected(old('payment_status')==='paid')>Paid</option>
-                </select>
-                @error('payment_status') <span class="field-error">{{ $message }}</span> @enderror
+                <input type="text" class="form-input" value="Unpaid" disabled aria-describedby="payment-status-note">
+                <span id="payment-status-note" style="display:block;margin-top:.25rem;font-size:.7rem;color:var(--text-dim);">Updates as payments are recorded on the order.</span>
             </div>
             <div class="form-group">
                 <label class="form-label">Order Status</label>

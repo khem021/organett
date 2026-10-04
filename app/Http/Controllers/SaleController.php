@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Sale;
 use App\Services\ActivityLogger;
+use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -12,13 +13,17 @@ class SaleController extends Controller
 {
     public function store(Request $request, Order $order)
     {
+        if ($order->order_status === 'cancelled') {
+            return back()->withInput()->withErrors(['amount' => "Order {$order->order_no} is cancelled, so it cannot take payments."]);
+        }
+
         $alreadyPaid = round((float) $order->sales()->sum('amount'), 2);
         $maxAllowed = round((float) $order->total_amount - $alreadyPaid, 2);
 
         $data = $request->validate([
             'sale_date' => 'required|date',
-            'quantity_kg' => 'required|numeric|min:0.01',
-            'amount' => ['required', 'numeric', 'min:0.01', 'max:'.$maxAllowed],
+            'quantity_kg' => Money::rules(),
+            'amount' => [...Money::rules(), 'max:'.$maxAllowed],
             'payment_method' => 'required|in:Cash,GCash,Maya,Bank Transfer,Cheque,Other',
             'remarks' => 'nullable|string',
         ]);

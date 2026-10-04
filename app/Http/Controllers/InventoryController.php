@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Inventory;
 use App\Models\InventoryTransaction;
 use App\Services\ActivityLogger;
+use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -54,8 +55,8 @@ class InventoryController extends Controller
             'item_name' => 'required|string|max:150',
             'category' => 'required|string|max:120',
             'unit' => 'required|string|max:50',
-            'stock_qty' => 'required|numeric|min:0',
-            'reorder_level' => 'required|numeric|min:0',
+            'stock_qty' => Money::rules('0'),
+            'reorder_level' => Money::rules('0'),
             'location' => 'nullable|string|max:150',
         ]);
         $item = Inventory::create($data);
@@ -74,7 +75,7 @@ class InventoryController extends Controller
             'unit' => 'required|string|max:50',
             // Matches the create rule — min:0.01 made existing items that were
             // created with a 0 reorder level impossible to edit at all.
-            'reorder_level' => 'required|numeric|min:0',
+            'reorder_level' => Money::rules('0'),
             'location' => 'nullable|string|max:150',
         ]);
 
@@ -90,18 +91,26 @@ class InventoryController extends Controller
     {
         $data = $request->validate([
             'transaction_type' => 'required|in:in,out',
-            'quantity' => 'required|numeric|min:0.01',
+            'quantity' => Money::rules(),
             'notes' => 'nullable|string|max:255',
         ]);
 
         $insufficient = false;
+        $overflow = false;
         $updatedQty = 0;
 
-        DB::transaction(function () use ($data, $inventory, &$insufficient, &$updatedQty) {
+        DB::transaction(function () use ($data, $inventory, &$insufficient, &$overflow, &$updatedQty) {
             $locked = Inventory::lockForUpdate()->find($inventory->id);
 
             if ($data['transaction_type'] === 'out' && $locked->stock_qty < $data['quantity']) {
                 $insufficient = true;
+
+                return;
+            }
+
+            // stock_qty is decimal(10,2): a top-up past its ceiling would be a database error.
+            if ($data['transaction_type'] === 'in' && Money::exceeds(bcadd((string) $locked->stock_qty, (string) $data['quantity'], 2))) {
+                $overflow = true;
 
                 return;
             }
@@ -125,6 +134,10 @@ class InventoryController extends Controller
 
         if ($insufficient) {
             return back()->with('error', 'Insufficient stock.');
+        }
+
+        if ($overflow) {
+            return back()->withErrors(['quantity' => 'That would take the stock above the most that can be recorded ('.number_format((float) Money::MAX, 2).').'])->withInput();
         }
 
         // Refresh so the activity log sees the updated qty

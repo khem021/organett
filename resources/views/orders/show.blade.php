@@ -263,15 +263,10 @@
             </select>
             @error('order_status') <span class="field-error">{{ $message }}</span> @enderror
         </div>
-        <div class="form-group">
-            <label class="form-label">Payment Status</label>
-            <select name="payment_status" class="form-select" required>
-                <option value="unpaid" @selected(old('payment_status', $order->payment_status)==='unpaid')>Unpaid</option>
-                <option value="partial" @selected(old('payment_status', $order->payment_status)==='partial')>Partial</option>
-                <option value="paid" @selected(old('payment_status', $order->payment_status)==='paid')>Paid</option>
-            </select>
-            @error('payment_status') <span class="field-error">{{ $message }}</span> @enderror
-        </div>
+        <p style="margin:0 0 1rem;font-size:.8rem;color:var(--text-muted);line-height:1.5;">
+            Payment status is <strong>{{ ucfirst($order->payment_status) }}</strong>. It follows the payments recorded on this order;
+            record or delete a payment to change it.
+        </p>
         <div class="form-actions">
             <button type="button" class="btn-secondary" onclick="this.closest('dialog').close()">Cancel</button>
             <button type="submit" class="btn-primary" style="padding:.5rem 1.25rem;font-size:.875rem;">Save</button>

@@ -57,9 +57,10 @@ class ReportController extends Controller
         });
 
         // Top customers. Customers with no sales sum to NULL, and Postgres sorts
-        // NULLs first on DESC — without NULLS LAST they'd outrank real revenue.
+        // NULLs first on DESC, so treat them as zero. COALESCE rather than NULLS LAST,
+        // which MySQL does not understand.
         $topCustomers = Customer::withSum('sales as total_sales', 'amount')
-            ->orderByRaw('total_sales DESC NULLS LAST')
+            ->orderByRaw('COALESCE(total_sales, 0) DESC')
             ->take(5)->get();
 
         // Harvest by grade

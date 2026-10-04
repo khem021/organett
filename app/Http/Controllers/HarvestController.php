@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HarvestRecord;
 use App\Models\ProductionBatch;
 use App\Services\ActivityLogger;
+use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -36,7 +37,7 @@ class HarvestController extends Controller
         $data = $request->validate([
             'batch_id' => 'required|exists:production_batches,id',
             'harvest_date' => 'required|date',
-            'quantity_kg' => 'required|numeric|min:0.01',
+            'quantity_kg' => Money::rules(),
             'quality_grade' => 'required|in:A,B,C',
             'notes' => 'nullable|string',
         ]);
@@ -66,7 +67,7 @@ class HarvestController extends Controller
     {
         $data = $request->validate([
             'harvest_date' => 'required|date',
-            'quantity_kg' => 'required|numeric|min:0.01',
+            'quantity_kg' => Money::rules(),
             'quality_grade' => 'required|in:A,B,C',
             'notes' => 'nullable|string',
         ]);

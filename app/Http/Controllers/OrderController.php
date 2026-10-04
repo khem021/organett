@@ -7,6 +7,7 @@ use App\Models\Delivery;
 use App\Models\Order;
 use App\Models\Setting;
 use App\Services\ActivityLogger;
+use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -61,9 +62,8 @@ class OrderController extends Controller
             'order_date' => 'required|date',
             'delivery_date' => 'required|date|after_or_equal:order_date',
             'item_name' => 'required|string|max:150',
-            'quantity_kg' => 'required|numeric|min:0.01',
-            'unit_price' => 'required|numeric|min:0',
-            'payment_status' => 'required|in:unpaid,partial,paid',
+            'quantity_kg' => Money::rules(),
+            'unit_price' => Money::rules('0'),
             'order_status' => 'required|in:pending,processing,completed,cancelled',
             'notes' => 'nullable|string',
         ]);
@@ -71,7 +71,13 @@ class OrderController extends Controller
         // exists: rule bypasses the tenant scope — confirm the customer is ours.
         abort_unless(Customer::whereKey($data['customer_id'])->exists(), 404);
 
-        $data['total_amount'] = $data['quantity_kg'] * $data['unit_price'];
+        // Exact decimal arithmetic, and a total the column can actually store.
+        $data['total_amount'] = Money::total($data['quantity_kg'], $data['unit_price']);
+        Money::assertFits($data['total_amount'], 'unit_price', 'That order total');
+
+        // Payment status follows the payments recorded against the order (see SaleController),
+        // so every order starts unpaid whatever else is submitted with it.
+        $data['payment_status'] = 'unpaid';
 
         $order = DB::transaction(function () use ($data) {
             $year = now()->year;
@@ -79,9 +85,11 @@ class OrderController extends Controller
 
             // Highest sequence already used by THIS farm for THIS year
             // (soft-deleted rows included so numbers are never reused).
+            // Longest first: as text "999" sorts above "1000", which would hand out 1000 twice.
             $lastNo = Order::withTrashed()
                 ->whereLike('order_no', $prefix.'%')
                 ->lockForUpdate()
+                ->orderByRaw('LENGTH(order_no) DESC')
                 ->orderByDesc('order_no')
                 ->value('order_no');
 
@@ -108,13 +116,18 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
+        // Payment status is not editable: it is worked out from the payments on record.
         $data = $request->validate([
             'order_status' => 'required|in:pending,processing,completed,cancelled',
-            'payment_status' => 'required|in:unpaid,partial,paid',
         ]);
+
+        if ($data['order_status'] === 'cancelled' && $order->order_status !== 'cancelled' && $blocked = $this->paymentsBlock($order, 'cancelled')) {
+            return redirect()->back()->with('error', $blocked);
+        }
+
         $order->update($data);
 
-        ActivityLogger::log('Orders', 'update', "Updated {$order->order_no} — status: {$data['order_status']}, payment: {$data['payment_status']}");
+        ActivityLogger::log('Orders', 'update', "Updated {$order->order_no} — status: {$data['order_status']}");
 
         return redirect()->back()->with('success', 'Order status updated.');
     }
@@ -123,6 +136,10 @@ class OrderController extends Controller
     {
         if (in_array($order->order_status, ['completed', 'cancelled'])) {
             return redirect()->back()->with('error', 'Cannot cancel a completed or already cancelled order.');
+        }
+
+        if ($blocked = $this->paymentsBlock($order, 'cancelled')) {
+            return redirect()->back()->with('error', $blocked);
         }
 
         $order->update(['order_status' => 'cancelled']);
@@ -162,6 +179,10 @@ class OrderController extends Controller
 
     public function destroy(Order $order)
     {
+        if ($blocked = $this->paymentsBlock($order, 'deleted')) {
+            return redirect()->back()->with('error', $blocked);
+        }
+
         $orderNo = $order->order_no;
 
         DB::transaction(function () use ($order) {
@@ -173,5 +194,22 @@ class OrderController extends Controller
         ActivityLogger::log('Orders', 'delete', "Deleted order {$orderNo}");
 
         return redirect()->route('orders.index')->with('success', 'Order deleted.');
+    }
+
+    /**
+     * An order that money has been paid against can be neither cancelled nor deleted:
+     * either would leave recorded payments, and the revenue reports, pointing at nothing.
+     * The payments have to be removed first, which is a deliberate step.
+     */
+    private function paymentsBlock(Order $order, string $verb): ?string
+    {
+        $paid = round((float) $order->sales()->sum('amount'), 2);
+
+        if ($paid <= 0) {
+            return null;
+        }
+
+        return "Order {$order->order_no} has ₱".number_format($paid, 2)." in payments recorded, so it cannot be {$verb}. "
+            .'Delete its payment records first if they were entered by mistake.';
     }
 }
