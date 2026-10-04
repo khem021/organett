@@ -37,32 +37,11 @@ label { margin-bottom: .5rem; }
     </div>
     <div class="field">
         <label for="password">New password</label>
-        <div class="input-wrap">
-            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-            <input id="password" type="password" name="password"
-                   required autocomplete="new-password"
-                   placeholder="Min. 10 characters"
-                   class="{{ $errors->has('password') ? 'is-error' : '' }}">
-        </div>
-        @error('password')
-            <p class="error-msg">{{ $message }}</p>
-        @enderror
-        <p class="hint">At least 10 characters with upper and lower case, a number and a symbol</p>
+        <x-password-input id="password" autocomplete="new-password" placeholder="Min. 10 characters" :error="$errors->first('password')" hint="At least 10 characters with upper and lower case, a number and a symbol" />
     </div>
     <div class="field">
         <label for="password_confirmation">Confirm new password</label>
-        <div class="input-wrap">
-            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-            <input id="password_confirmation" type="password" name="password_confirmation"
-                   required autocomplete="new-password"
-                   placeholder="Repeat password">
-        </div>
+        <x-password-input id="password_confirmation" autocomplete="new-password" placeholder="Repeat password" />
     </div>
     <button type="submit" class="btn-primary">Reset Password</button>
 </form>

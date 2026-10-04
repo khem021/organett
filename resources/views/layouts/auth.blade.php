@@ -194,6 +194,23 @@
         .back-link { display: block; text-align: center; margin-top: 1.25rem; font-size: .8125rem; color: var(--text-muted); text-decoration: none; transition: color .15s; }
         .back-link:hover { color: var(--green-light); }
 
+        /* Show / hide password */
+        input.has-toggle { padding-right: 2.75rem; }
+        .pw-toggle {
+            position: absolute; right: .375rem; top: 50%; transform: translateY(-50%);
+            display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem;
+            background: none; border: 0; border-radius: .375rem; color: var(--text-muted); cursor: pointer;
+        }
+        .pw-toggle:hover { color: var(--green-light); }
+        .pw-toggle .pw-hide { display: none; }
+        .pw-toggle.is-on .pw-show { display: none; }
+        .pw-toggle.is-on .pw-hide { display: inline; }
+
+        /* Keyboard focus must always be visible */
+        a:focus-visible, button:focus-visible, input[type="checkbox"]:focus-visible {
+            outline: 2px solid var(--green-accent); outline-offset: 2px;
+        }
+
         @yield('extra-style')
     </style>
 </head>
@@ -227,5 +244,18 @@
         </div>
         @yield('after-card')
     </div>
+    <script>
+        // Show / hide password: the button controls the input named in data-pw-toggle.
+        document.querySelectorAll('[data-pw-toggle]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(btn.dataset.pwToggle);
+                var show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.classList.toggle('is-on', show);
+                btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+                btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            });
+        });
+    </script>
 </body>
 </html>
