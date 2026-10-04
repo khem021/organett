@@ -343,6 +343,10 @@
         /* An absolutely positioned child of a table cell must be contained by the table, or it escapes the
            horizontal-scroll wrapper and widens the whole page by the column's offset. */
         table, .table-scroll { position: relative; }
+        /* While a platform admin is viewing a farm the banner sits above everything; the page, the fixed
+           sidebar and the sticky top bar all move down by its real height (set from script, 44px without it). */
+        body.impersonating .sidebar { top: var(--banner-h, 44px); min-height: calc(100vh - var(--banner-h, 44px)); }
+        body.impersonating .topbar { top: var(--banner-h, 44px); }
         .sr-only {
             position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
             overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
@@ -1005,11 +1009,11 @@
     </style>
     @stack('styles')
 </head>
-<body @if(session()->has('impersonator_id')) style="padding-top:44px;" @endif>
+<body @if(session()->has('impersonator_id')) class="impersonating" style="padding-top:var(--banner-h,44px);" @endif>
 
     @if(session()->has('impersonator_id'))
     {{-- Must be unmissable: forgetting you are impersonating is the main risk here. --}}
-    <div role="status" style="position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;padding:.6rem 1rem;background:#78350f;color:#fde68a;font-size:.8125rem;border-bottom:1px solid #b45309;">
+    <div id="impersonationBanner" role="status" style="position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;padding:.6rem 1rem;background:#78350f;color:#fde68a;font-size:.8125rem;border-bottom:1px solid #b45309;">
         <span>
             <strong>Read-only view.</strong>
             You are viewing <strong>{{ Auth::user()?->farm?->name ?? 'this farm' }}</strong> as {{ Auth::user()?->email }}.
@@ -1334,6 +1338,15 @@
     </button>
 
     <script>
+        // ── Impersonation banner: report its real height so nothing is hidden when it wraps on a phone ──
+        const impBanner = document.getElementById('impersonationBanner');
+        if (impBanner) {
+            const setBannerHeight = () => document.documentElement.style.setProperty('--banner-h', impBanner.offsetHeight + 'px');
+            setBannerHeight();
+            if ('ResizeObserver' in window) new ResizeObserver(setBannerHeight).observe(impBanner);
+            window.addEventListener('resize', setBannerHeight);
+        }
+
         // ── Sidebar toggle (mobile) ────────────────────────────────────────
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');

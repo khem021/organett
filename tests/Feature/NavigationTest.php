@@ -132,3 +132,25 @@ it('asks before cancelling an order, naming it, from the list and from the order
             ->and($html)->toContain('data-confirm-title="Cancel order"');
     }
 });
+
+it('reserves room for the impersonation banner however tall it wraps', function () {
+    [$farm] = makeFarm('Banner Space Farm');
+
+    $this->actingAs(superAdmin())->post("/admin/farms/{$farm->id}/impersonate")->assertRedirect('/dashboard');
+    $html = $this->get('/dashboard')->getContent();
+
+    // The banner reports its real height into --banner-h; the page, sidebar and top bar all offset by it.
+    expect($html)->toContain('id="impersonationBanner"')
+        ->and($html)->toContain('class="impersonating"')
+        ->and($html)->toContain('--banner-h')
+        ->and($html)->toContain('Exit to platform admin');
+});
+
+it('adds no banner offset for a normal session', function () {
+    [$farm, $admin] = makeFarm('No Banner Farm');
+
+    $html = $this->actingAs($admin)->get('/dashboard')->getContent();
+
+    expect(str_contains($html, 'id="impersonationBanner"'))->toBeFalse()
+        ->and(str_contains($html, 'class="impersonating"'))->toBeFalse();
+});
