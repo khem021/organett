@@ -33,7 +33,14 @@ class BatchController extends Controller
             // ignores the tenant scope — without this a farm is refused a batch
             // code because some other farm's record it cannot see already has it.
             'batch_code' => [
-                'required', 'string', 'max:100',
+                'bail', 'required', 'string', 'max:100',
+                // The farm's unique index counts deleted batches too, so a code cannot come
+                // back; say that, rather than calling it "taken" when nothing shows it.
+                function ($attribute, $value, $fail) {
+                    if (ProductionBatch::onlyTrashed()->where('batch_code', $value)->exists()) {
+                        $fail("Batch code {$value} belonged to a batch that was deleted and cannot be reused. Please choose another code.");
+                    }
+                },
                 Rule::unique('production_batches')->where(
                     fn ($q) => $q->where('farm_id', Auth::user()->farm_id)
                 ),
