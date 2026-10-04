@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\AccountRecovery;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRules;
 
 class ResetPasswordController extends Controller
@@ -28,11 +27,11 @@ class ResetPasswordController extends Controller
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                ])->setRememberToken(Str::random(60));
+                // Same routine as the admin and console resets: it also signs the account
+                // out of every other device and leaves an entry in the audit trail, which
+                // matters most when the reset was done because a password had been stolen.
+                AccountRecovery::resetPassword($user, $password, "Password reset by the account owner through an emailed link ({$user->email}).");
 
-                $user->save();
                 event(new PasswordReset($user));
             }
         );

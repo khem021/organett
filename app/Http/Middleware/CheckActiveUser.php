@@ -16,27 +16,16 @@ class CheckActiveUser
             return $next($request);
         }
 
-        // Deactivated individual account
-        $accountInactive = $user->status !== 'active';
-
-        // Suspended / pending farm — super admins have no farm and are exempt.
-        // An archived farm no longer resolves through the relation (SoftDeletes),
-        // so a user still carrying its farm_id must be treated as locked out too,
-        // or they would sail through this check into an empty app.
-        $farmInactive = $user->role !== 'super_admin'
-            && $user->farm_id !== null
-            && (! $user->farm || $user->farm->status !== 'active');
-
-        if ($accountInactive || $farmInactive) {
+        // A deactivated account, or a farm that is pending, rejected, suspended or
+        // archived (an archived farm no longer resolves through its relation, so a
+        // user still carrying its farm_id must be locked out too, or they would sail
+        // through into an empty app). Super admins have no farm and are exempt.
+        if ($reason = $user->lockoutReason()) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            $message = $farmInactive && ! $accountInactive
-                ? 'Your farm account is not active. Please contact Organett support.'
-                : 'Your account has been deactivated. Contact the administrator.';
-
-            return redirect('/login')->withErrors(['email' => $message]);
+            return redirect('/login')->withErrors(['email' => $reason]);
         }
 
         return $next($request);

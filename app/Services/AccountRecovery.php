@@ -14,8 +14,8 @@ class AccountRecovery
     /**
      * Set a new password on an existing account and sign it out everywhere else.
      *
-     * Shared by the organett:reset-password console command and the super admin
-     * recovery screen, so both paths behave identically.
+     * Shared by the organett:reset-password console command, the super admin
+     * recovery screen and the emailed reset link, so all three behave identically.
      *
      * @return int how many stored sessions were cleared
      */

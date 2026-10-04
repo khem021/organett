@@ -71,7 +71,7 @@ it('rejects a pending farm and keeps the reason in the audit trail', function ()
         ->patch("/admin/farms/{$farm->id}/reject", ['reason' => 'Looks like a duplicate'])
         ->assertRedirect();
 
-    expect($farm->fresh()->status)->toBe('inactive');
+    expect($farm->fresh()->status)->toBe('rejected');
 
     $log = ActivityLog::where('action', 'reject')->latest('id')->first();
     expect($log->description)->toContain('Looks like a duplicate');

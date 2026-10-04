@@ -118,6 +118,8 @@
                             <span style="display:inline-block;padding:.2rem .6rem;background:#14532d44;color:var(--green-light);border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;">Active</span>
                         @elseif($farm->status === 'inactive')
                             <span style="display:inline-block;padding:.2rem .6rem;background:#7f1d1d33;color:var(--danger);border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;">Inactive</span>
+                        @elseif($farm->status === 'rejected')
+                            <span style="display:inline-block;padding:.2rem .6rem;background:#7f1d1d33;color:var(--danger);border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;">Rejected</span>
                         @else
                             <span style="display:inline-block;padding:.2rem .6rem;background:#78350f33;color:var(--warning);border-radius:99px;font-size:.7rem;font-weight:600;text-transform:uppercase;">Pending</span>
                         @endif

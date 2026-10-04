@@ -77,10 +77,10 @@ class FarmController extends Controller
 
         $request->validate(['reason' => ['nullable', 'string', 'max:500']]);
 
-        // There is no 'rejected' value on the farms.status enum, and widening a DB
-        // enum needs its own migration — a rejected farm is simply inactive, with
-        // the reason kept in the audit trail.
-        $farm->update(['status' => 'inactive']);
+        // Stored as its own status, not 'inactive', so the owner is told their
+        // registration was turned down rather than that the farm was suspended.
+        // The reason stays in the audit trail.
+        $farm->update(['status' => 'rejected']);
 
         ActivityLogger::logForFarm(
             $farm->id,
