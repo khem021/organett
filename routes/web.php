@@ -16,6 +16,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SuperAdmin\AccountController as SuperAdminAccountController;
 use App\Http\Controllers\SuperAdmin\AuditController as SuperAdminAuditController;
 use App\Http\Controllers\SuperAdmin\FarmController as SuperAdminFarmController;
 use App\Http\Controllers\SuperAdmin\SecurityController as SuperAdminSecurityController;
@@ -130,6 +131,10 @@ Route::middleware('auth')->group(function () {
         Route::patch('/farms/{farm}/approve', [SuperAdminFarmController::class, 'approve'])->name('farms.approve');
         Route::patch('/farms/{farm}/reject', [SuperAdminFarmController::class, 'reject'])->name('farms.reject');
         Route::post('/farms/{farm}/impersonate', [ImpersonationController::class, 'start'])->name('farms.impersonate');
+        // Account recovery for a farm's users
+        Route::post('/farms/{farm}/users/{user}/reset-password', [SuperAdminAccountController::class, 'resetPassword'])->name('farms.users.reset');
+        Route::patch('/farms/{farm}/users/{user}/status', [SuperAdminAccountController::class, 'updateStatus'])->name('farms.users.status');
+
         Route::get('/farms/{farm}/features', [SuperAdminFarmController::class, 'features'])->name('farms.features');
         Route::patch('/farms/{farm}/features', [SuperAdminFarmController::class, 'updateFeatures'])->name('farms.features.update');
 

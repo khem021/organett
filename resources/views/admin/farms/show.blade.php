@@ -38,6 +38,10 @@
     <div style="margin-bottom:1.25rem;padding:.75rem 1rem;background:#7f1d1d33;border:1px solid #f8717144;border-radius:.5rem;font-size:.875rem;color:var(--danger);">{{ session('error') }}</div>
 @endif
 
+@error('password')
+    <div style="margin-bottom:1.25rem;padding:.75rem 1rem;background:#7f1d1d33;border:1px solid #f8717144;border-radius:.5rem;font-size:.875rem;color:var(--danger);">{{ $message }}</div>
+@enderror
+
 {{-- Stats row --}}
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;">
     <div class="stat-card">
@@ -67,6 +71,7 @@
                     <th style="padding:.75rem 1rem;text-align:left;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;">Email</th>
                     <th style="padding:.75rem 1rem;text-align:center;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;">Role</th>
                     <th style="padding:.75rem 1rem;text-align:center;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;">Status</th>
+                    <th style="padding:.75rem 1.5rem;text-align:right;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;">Recovery</th>
                 </tr>
             </thead>
             <tbody>
@@ -84,9 +89,31 @@
                             <span style="font-size:.7rem;padding:.2rem .5rem;background:#7f1d1d33;color:var(--danger);border-radius:99px;">Inactive</span>
                         @endif
                     </td>
+                    <td style="padding:.875rem 1.5rem;text-align:right;white-space:nowrap;vertical-align:top;">
+                        <form method="POST" action="{{ route('admin.farms.users.status', [$farm, $user]) }}" style="display:inline;">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="status" value="{{ $user->status === 'active' ? 'inactive' : 'active' }}">
+                            <button type="submit" style="padding:.3rem .7rem;background:transparent;border:1px solid var(--card-border);border-radius:.375rem;font-size:.75rem;cursor:pointer;color:{{ $user->status === 'active' ? 'var(--danger)' : 'var(--green-light)' }};">
+                                {{ $user->status === 'active' ? 'Deactivate' : 'Activate' }}
+                            </button>
+                        </form>
+
+                        <details style="display:inline-block;text-align:left;margin-left:.5rem;">
+                            <summary style="cursor:pointer;font-size:.75rem;color:var(--text-muted);list-style:none;display:inline;">Reset password</summary>
+                            <form method="POST" action="{{ route('admin.farms.users.reset', [$farm, $user]) }}" style="margin-top:.6rem;display:flex;flex-direction:column;gap:.4rem;min-width:220px;">
+                                @csrf
+                                <input type="password" name="password" required autocomplete="new-password" placeholder="New password"
+                                       style="padding:.4rem .6rem;border:1px solid var(--card-border);border-radius:.375rem;background:transparent;color:var(--text);font-size:.78rem;">
+                                <input type="password" name="password_confirmation" required autocomplete="new-password" placeholder="Confirm password"
+                                       style="padding:.4rem .6rem;border:1px solid var(--card-border);border-radius:.375rem;background:transparent;color:var(--text);font-size:.78rem;">
+                                <button type="submit" class="btn-primary" style="font-size:.78rem;padding:.35rem .8rem;">Set password</button>
+                                <span style="font-size:.68rem;color:var(--text-dim);">Signs this account out everywhere.</span>
+                            </form>
+                        </details>
+                    </td>
                 </tr>
                 @empty
-                <tr><td colspan="4" style="padding:2rem;text-align:center;color:var(--text-muted);">No users in this farm.</td></tr>
+                <tr><td colspan="5" style="padding:2rem;text-align:center;color:var(--text-muted);">No users in this farm.</td></tr>
                 @endforelse
             </tbody>
         </table>
