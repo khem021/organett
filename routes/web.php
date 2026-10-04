@@ -9,6 +9,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FarmRegistrationController;
 use App\Http\Controllers\HarvestController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReportController;
@@ -43,6 +44,10 @@ Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->mid
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+    // Outside the super admin group on purpose: by the time this is called the
+    // session belongs to the farm user being viewed, not to the super admin.
+    Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
 
     // Batches
     Route::get('/batches', [BatchController::class, 'index'])->name('batches.index');
@@ -124,6 +129,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/farms/{farm}/status', [SuperAdminFarmController::class, 'updateStatus'])->name('farms.status');
         Route::patch('/farms/{farm}/approve', [SuperAdminFarmController::class, 'approve'])->name('farms.approve');
         Route::patch('/farms/{farm}/reject', [SuperAdminFarmController::class, 'reject'])->name('farms.reject');
+        Route::post('/farms/{farm}/impersonate', [ImpersonationController::class, 'start'])->name('farms.impersonate');
         Route::get('/farms/{farm}/features', [SuperAdminFarmController::class, 'features'])->name('farms.features');
         Route::patch('/farms/{farm}/features', [SuperAdminFarmController::class, 'updateFeatures'])->name('farms.features.update');
 

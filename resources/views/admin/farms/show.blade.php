@@ -10,6 +10,12 @@
         <p class="page-sub">{{ $farm->slug }} &bull; Registered {{ $farm->created_at->format('M d, Y') }}</p>
     </div>
     <div style="display:flex;gap:.75rem;align-items:center;">
+        @if($farm->status === 'active')
+        <form method="POST" action="{{ route('admin.farms.impersonate', $farm) }}">
+            @csrf
+            <button type="submit" class="btn-outline" style="font-size:.8rem;cursor:pointer;">View as farm</button>
+        </form>
+        @endif
         <a href="{{ route('admin.farms.features', $farm) }}" class="btn-outline" style="font-size:.8rem;">Manage Features</a>
         <form method="POST" action="{{ route('admin.farms.status', $farm) }}">
             @csrf @method('PATCH')
@@ -26,6 +32,10 @@
 
 @if(session('status'))
     <div style="margin-bottom:1.25rem;padding:.75rem 1rem;background:#14532d33;border:1px solid #16a34a55;border-radius:.5rem;font-size:.875rem;color:var(--green-light);">{{ session('status') }}</div>
+@endif
+
+@if(session('error'))
+    <div style="margin-bottom:1.25rem;padding:.75rem 1rem;background:#7f1d1d33;border:1px solid #f8717144;border-radius:.5rem;font-size:.875rem;color:var(--danger);">{{ session('error') }}</div>
 @endif
 
 {{-- Stats row --}}

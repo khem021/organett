@@ -987,7 +987,23 @@
     </style>
     @stack('styles')
 </head>
-<body>
+<body @if(session()->has('impersonator_id')) style="padding-top:44px;" @endif>
+
+    @if(session()->has('impersonator_id'))
+    {{-- Must be unmissable: forgetting you are impersonating is the main risk here. --}}
+    <div role="status" style="position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;padding:.6rem 1rem;background:#78350f;color:#fde68a;font-size:.8125rem;border-bottom:1px solid #b45309;">
+        <span>
+            <strong>Read-only view.</strong>
+            You are viewing <strong>{{ Auth::user()?->farm?->name ?? 'this farm' }}</strong> as {{ Auth::user()?->email }}.
+        </span>
+        <form method="POST" action="{{ route('impersonate.stop') }}" style="display:inline;">
+            @csrf
+            <button type="submit" style="padding:.25rem .75rem;background:#fde68a;color:#78350f;border:none;border-radius:.375rem;font-size:.75rem;font-weight:700;cursor:pointer;">
+                Exit to platform admin
+            </button>
+        </form>
+    </div>
+    @endif
 
     <a href="#main-content" class="skip-link">Skip to content</a>
 

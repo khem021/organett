@@ -3,6 +3,7 @@
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CheckActiveUser;
 use App\Http\Middleware\CheckFarmFeature;
+use App\Http\Middleware\ReadOnlyImpersonation;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -36,6 +37,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         // Kick deactivated users out on every web request
         $middleware->appendToGroup('web', CheckActiveUser::class);
+        // Hold a super admin viewing a farm to reads only
+        $middleware->appendToGroup('web', ReadOnlyImpersonation::class);
         $middleware->appendToGroup('web', SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
