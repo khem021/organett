@@ -34,10 +34,13 @@ class FarmRegistrationController extends Controller
             ]);
         }
 
+        // Stored in lower case so "Ana@x.com" and "ana@x.com" cannot become two accounts.
+        $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
+
         $data = $request->validate([
             'farm_name' => ['required', 'string', 'max:255'],
-            'full_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email'],
+            'full_name' => ['required', 'string', 'max:150'],
+            'email' => ['required', 'email', 'max:150', 'unique:users,email'],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
@@ -71,7 +74,7 @@ class FarmRegistrationController extends Controller
             $user = User::create([
                 'farm_id' => $farm->id,
                 'full_name' => $data['full_name'],
-                'username' => Str::slug($data['full_name']).rand(100, 999),
+                'username' => $this->uniqueUsername($data['full_name']),
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
                 'role' => 'farm_admin',
@@ -90,5 +93,21 @@ class FarmRegistrationController extends Controller
         // next request with a confusing message.
         return redirect('/login')->with('status', "Thanks! '{$farm->name}' has been submitted for review. "
             .'You can sign in once a platform administrator approves it.');
+    }
+
+    /**
+     * A username that fits users.username (80 characters) and is not taken.
+     * Str::slug() returns nothing for a name with no Latin letters, so fall back
+     * to a plain word rather than a bare number.
+     */
+    private function uniqueUsername(string $fullName): string
+    {
+        $base = Str::limit(Str::slug($fullName), 70, '') ?: 'user';
+
+        do {
+            $username = $base.random_int(100, 9999);
+        } while (User::where('username', $username)->exists());
+
+        return $username;
     }
 }

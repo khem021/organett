@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
@@ -43,10 +44,12 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
+
         $request->validate([
             'full_name' => 'required|string|max:150',
             'username' => 'required|string|max:80|unique:users|alpha_dash',
-            'email' => 'required|email|unique:users',
+            'email' => 'required|email|max:150|unique:users',
             'password' => ['required', 'confirmed', Password::defaults()],
             'role' => 'required|in:'.implode(',', self::ASSIGNABLE_ROLES),
             'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
