@@ -20,8 +20,15 @@ class OrderController extends Controller
         if ($request->filled('status')) {
             $query->where('order_status', $request->status);
         }
-        if ($request->filled('payment')) {
+        // "open" is what the dashboard links to: orders that still owe money.
+        if ($request->payment === 'open') {
+            $query->where('order_status', '!=', 'cancelled')->whereIn('payment_status', ['unpaid', 'partial']);
+        } elseif ($request->filled('payment')) {
             $query->where('payment_status', $request->payment);
+        }
+        if ($request->boolean('overdue')) {
+            $query->whereIn('order_status', ['pending', 'processing'])
+                ->whereDate('delivery_date', '<', now()->toDateString());
         }
         if ($request->filled('search')) {
             $term = '%'.$request->search.'%';

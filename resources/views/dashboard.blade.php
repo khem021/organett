@@ -3,10 +3,48 @@
 @section('page-title', 'Dashboard')
 
 @push('styles')
+<style>
+    /* "Needs your attention today": one chip per urgent item, each a link to the list that fixes it. */
+    .attention { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: .75rem; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+    .attention-title { font-size: .8125rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 .75rem; }
+    .attention-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+    .attention-chip { display: inline-flex; align-items: center; gap: .5rem; padding: .45rem .8rem; border-radius: 999px; font-size: .8125rem; font-weight: 600; text-decoration: none; border: 1px solid var(--card-border); color: var(--text); background: var(--bg); }
+    .attention-chip:hover { border-color: var(--green-accent); }
+    .attention-chip:focus-visible { outline: 2px solid var(--green-accent); outline-offset: 2px; }
+    .attention-chip.is-danger { border-color: var(--danger); color: var(--danger); }
+    .attention-chip.is-warn { border-color: var(--warning); color: var(--warning); }
+    .attention-clear { display: flex; align-items: center; gap: .5rem; margin: 0; font-size: .875rem; color: var(--green-light); }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.js" integrity="sha384-zuFoHkJ6+XzUchVtS39qBWxb+LvdA7aQ/ze8jYdufBf/A1jeuKGDBg4crfxvZAr8" crossorigin="anonymous"></script>
 @endpush
 
 @section('content')
+
+{{-- ── Needs your attention today ── --}}
+<section class="attention" aria-labelledby="attention-title">
+    <h2 id="attention-title" class="attention-title">Needs your attention today</h2>
+    @if($attention['any'])
+        <ul class="attention-list">
+            @if($attention['overdueOrders'] > 0)
+                <li><a class="attention-chip is-danger" href="{{ route('orders.index', ['overdue' => 1]) }}">{{ $attention['overdueOrders'] }} {{ \Illuminate\Support\Str::plural('delivery', $attention['overdueOrders']) }} overdue</a></li>
+            @endif
+            @if($attention['openOrders'] > 0)
+                <li><a class="attention-chip is-warn" href="{{ route('orders.index', ['payment' => 'open']) }}">₱{{ number_format((float) $attention['outstanding'], 2) }} unpaid across {{ $attention['openOrders'] }} {{ \Illuminate\Support\Str::plural('order', $attention['openOrders']) }}</a></li>
+            @endif
+            @if($attention['lowStock'] > 0)
+                <li><a class="attention-chip is-danger" href="{{ route('inventory.index', ['filter' => 'low']) }}">{{ $attention['lowStock'] }} {{ \Illuminate\Support\Str::plural('item', $attention['lowStock']) }} low on stock</a></li>
+            @endif
+            @if($attention['harvestsDue'] > 0)
+                <li><a class="attention-chip" href="{{ route('batches.index', ['status' => 'fruiting']) }}">{{ $attention['harvestsDue'] }} {{ \Illuminate\Support\Str::plural('harvest', $attention['harvestsDue']) }} due</a></li>
+            @endif
+        </ul>
+    @else
+        <p class="attention-clear">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            Nothing needs your attention today.
+        </p>
+    @endif
+</section>
 
 {{-- ── Stat Cards ── --}}
 <div class="grid-4">

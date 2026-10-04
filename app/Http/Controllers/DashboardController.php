@@ -6,6 +6,7 @@ use App\Models\HarvestRecord;
 use App\Models\Inventory;
 use App\Models\Order;
 use App\Models\ProductionBatch;
+use App\Models\Sale;
 
 class DashboardController extends Controller
 {
@@ -105,7 +106,30 @@ class DashboardController extends Controller
         // Max qty for progress bar scaling
         $maxStock = $inventoryItems->max('stock_qty') ?: 1;
 
+        // ── Needs attention today ─────────────────────────────────────────────
+
+        // A delivery due today is not late yet.
+        $overdueOrders = Order::whereIn('order_status', ['pending', 'processing'])
+            ->whereDate('delivery_date', '<', $now->toDateString())
+            ->count();
+
+        // Money still owed on orders that have not been cancelled: what they are worth
+        // less what has been paid against them.
+        $open = Order::where('order_status', '!=', 'cancelled')->whereIn('payment_status', ['unpaid', 'partial']);
+        $owed = (float) (clone $open)->sum('total_amount')
+            - (float) Sale::whereIn('order_id', (clone $open)->select('id'))->sum('amount');
+
+        $attention = [
+            'overdueOrders' => $overdueOrders,
+            'openOrders' => (clone $open)->count(),
+            'outstanding' => number_format(max(0, round($owed, 2)), 2, '.', ''),
+            'lowStock' => $lowStockCount,
+            'harvestsDue' => $harvestAlerts->count(),
+        ];
+        $attention['any'] = $attention['overdueOrders'] + $attention['openOrders'] + $attention['lowStock'] + $attention['harvestsDue'] > 0;
+
         return view('dashboard', compact(
+            'attention',
             'activeBatches', 'fruitingCount',
             'monthYield', 'lastMonthYield', 'yieldChange',
             'pendingOrders', 'dispatchingToday',
