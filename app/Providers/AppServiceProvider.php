@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Inventory;
 use App\Models\Order;
+use App\Models\SecuritySetting;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -64,18 +65,23 @@ class AppServiceProvider extends ServiceProvider
                 ->withErrors(['email' => "Too many {$what}. Please try again in {$when}."]);
         };
 
+        // A super admin can switch all three limiters off from /admin/security.
+        $throttling = fn () => SecuritySetting::enabled(SecuritySetting::AUTH_THROTTLING);
+
         // Per account+IP stops guessing one password; per IP stops credential stuffing across accounts.
-        RateLimiter::for('login', fn (Request $request) => [
+        RateLimiter::for('login', fn (Request $request) => $throttling() ? [
             Limit::perMinute(5)->by('login:'.$email($request).'|'.$request->ip())->response($tooMany('login attempts')),
             Limit::perMinute(20)->by('login-ip:'.$request->ip())->response($tooMany('login attempts')),
-        ]);
+        ] : Limit::none());
 
-        RateLimiter::for('password-reset', fn (Request $request) => [
+        RateLimiter::for('password-reset', fn (Request $request) => $throttling() ? [
             Limit::perMinute(3)->by('reset-ip:'.$request->ip())->response($tooMany('reset requests')),
             Limit::perHour(5)->by('reset-email:'.$email($request))->response($tooMany('reset requests')),
-        ]);
+        ] : Limit::none());
 
         // Only guards against hammering the form; farms actually created are capped in FarmRegistrationController.
-        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(20)->by('register:'.$request->ip())->response($tooMany('sign-up attempts')));
+        RateLimiter::for('register', fn (Request $request) => $throttling()
+            ? Limit::perMinute(20)->by('register:'.$request->ip())->response($tooMany('sign-up attempts'))
+            : Limit::none());
     }
 }

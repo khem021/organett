@@ -1012,6 +1012,16 @@
                 All Farms
             </a>
 
+            <a href="{{ route('admin.security') }}" class="nav-item {{ request()->routeIs('admin.security*') ? 'active' : '' }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Security
+                @if(in_array(false, \App\Models\SecuritySetting::states(), true))
+                    <span class="nav-badge danger">OFF</span>
+                @endif
+            </a>
+
             @else
 
             <div class="nav-section">Main</div>

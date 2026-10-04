@@ -50,6 +50,22 @@ expect()->extend('toBeOne', function () {
 */
 
 /**
+ * Create a platform super admin, who belongs to no farm.
+ */
+function superAdmin(): User
+{
+    return User::create([
+        'farm_id' => null,
+        'full_name' => 'Platform Owner',
+        'username' => 'owner'.uniqid(),
+        'email' => 'owner-'.uniqid().'@example.test',
+        'password' => Hash::make('Sup3r!Secure#Pass'),
+        'role' => 'super_admin',
+        'status' => 'active',
+    ]);
+}
+
+/**
  * Create a farm plus one user attached to it.
  *
  * @return array{0: Farm, 1: User}

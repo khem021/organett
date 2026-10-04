@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\SecuritySetting;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,6 +12,11 @@ class SecurityHeaders
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
+
+        // Super admins can switch these off from /admin/security.
+        if (! SecuritySetting::enabled(SecuritySetting::HEADERS)) {
+            return $response;
+        }
 
         $headers = $response->headers;
         $headers->set('X-Frame-Options', 'DENY');
