@@ -15,7 +15,9 @@
         <button class="btn-primary" style="padding:.5rem 1rem;font-size:.875rem;" onclick="document.getElementById('record-payment').showModal()">+ Payment</button>
         <button class="btn-primary" style="padding:.5rem 1rem;font-size:.875rem;" onclick="document.getElementById('update-status').showModal()">Status</button>
         @if(!in_array($order->order_status, ['cancelled','completed']))
-        <form method="POST" action="{{ route('orders.cancel', $order) }}" style="display:inline">
+        <form method="POST" action="{{ route('orders.cancel', $order) }}" style="display:inline"
+              data-confirm="Cancel order {{ $order->order_no }}? It stays in your records but can no longer take payments or be dispatched."
+              data-confirm-title="Cancel order" data-confirm-button="Cancel order">
             @csrf @method('PATCH')
             <button type="submit" class="btn-secondary" style="padding:.5rem 1rem;font-size:.875rem;color:var(--warning);border-color:#78350f55;">Cancel</button>
         </form>

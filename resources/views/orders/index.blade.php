@@ -110,7 +110,8 @@
                     <a href="{{ route('orders.show', $order) }}" class="btn-sm btn-sm-blue">View</a>
                     @if(!in_array($order->order_status, ['cancelled','completed']))
                     <form method="POST" action="{{ route('orders.cancel', $order) }}" style="display:inline"
-                          data-confirm="Cancel order {{ $order->order_no }}?">
+                          data-confirm="Cancel order {{ $order->order_no }}? It stays in your records but can no longer take payments or be dispatched."
+                          data-confirm-title="Cancel order" data-confirm-button="Cancel order">
                         @csrf @method('PATCH')
                         <button type="submit" class="btn-sm btn-sm-yellow">Cancel</button>
                     </form>

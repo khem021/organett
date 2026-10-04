@@ -117,3 +117,18 @@ it('names the thing being deleted in its confirmation', function () {
 
     $this->actingAs($admin)->get('/batches')->assertSee('data-confirm="Delete batch &ldquo;'.$d['batch']->batch_code.'&rdquo;?', false);
 });
+
+it('asks before cancelling an order, naming it, from the list and from the order page', function () {
+    [$farm, $admin] = makeFarm('Cancel Confirm Farm');
+    $d = seedFarmData($farm);
+    $d['sale']->delete();
+    $d['order']->update(['payment_status' => 'unpaid']);
+    $this->actingAs($admin);
+
+    foreach (['/orders', "/orders/{$d['order']->id}"] as $url) {
+        $html = $this->get($url)->assertOk()->getContent();
+
+        expect($html)->toContain('data-confirm="Cancel order '.$d['order']->order_no.'?')
+            ->and($html)->toContain('data-confirm-title="Cancel order"');
+    }
+});
