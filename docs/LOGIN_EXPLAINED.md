@@ -1,6 +1,6 @@
 # How ORGANETT's login and access control work
 
-A plain-language walkthrough for the capstone panel. Everything here was read from the code in this repository (file and line references are given so a claim can be checked), and the behaviours marked **[ran it]** were also executed in a throwaway test against the current code. Nothing in this document changes the system; the weaknesses at the end are reported, not fixed.
+A plain-language walkthrough for the capstone panel. Everything here was read from the code in this repository (file and line references are given so a claim can be checked), and the behaviours marked **[ran it]** were also executed in a throwaway test against the current code. The sections below describe the system **as it is after the Phase 2 audit**; the weaknesses table at the end records what was found at the start and what became of each (the fixes are listed, with their tests, in [BUG_LEDGER.md](BUG_LEDGER.md)).
 
 **Vocabulary used throughout**
 
@@ -57,10 +57,10 @@ Defined in [routes/web.php](../routes/web.php):
 1. **CSRF check.** The form carries a hidden token (`@csrf`). The web middleware group rejects the POST (HTTP 419) if the token is missing or stale. This blocks other websites from submitting the form on a victim's behalf.
 2. **Rate-limit check** (`throttle:login`, before the controller): at most 5 attempts per minute for the same email + IP, and 20 per minute per IP.
 3. **Validation** ([line 21](../app/Http/Controllers/Auth/LoginController.php#L21)): `email` must be present and look like an email; `password` must be present. Nothing else (no length rule at login, on purpose: old passwords must still work).
-4. **`Auth::attempt($credentials, remember)`** ([line 26](../app/Http/Controllers/Auth/LoginController.php#L26)). Laravel looks the user up by email, checks the typed password against the stored bcrypt hash, and runs the whole check inside a *timebox* so a wrong email and a wrong password take the same time (no timing leak; `vendor/.../Auth/SessionGuard.php` `attempt()`). If both pass, the user id is written into the session and **the session id is regenerated** (`updateSession()` → `regenerate(true)`), which defeats session fixation.
+4. **`Auth::attempt($credentials, remember)`** ([line 26](../app/Http/Controllers/Auth/LoginController.php#L26)). Laravel looks the user up by email (compared in lower case, so `Ana@x.com` finds `ana@x.com`; PostgreSQL would otherwise treat them as different), checks the typed password against the stored bcrypt hash, and runs the whole check inside a *timebox* so a wrong email and a wrong password take the same time (no timing leak; `vendor/.../Auth/SessionGuard.php` `attempt()`). If both pass, the user id is written into the session and **the session id is regenerated** (`updateSession()` → `regenerate(true)`), which defeats session fixation.
 5. **On failure** ([lines 26-31](../app/Http/Controllers/Auth/LoginController.php#L26-L31)): a warning `auth.failed` (with the typed email and IP) is written to the application log, and the user is sent back to the form with one message, *"These credentials do not match our records."* The message is identical for "no such email" and "wrong password", so the form cannot be used to discover which emails exist.
-6. **Account-status check** ([lines 34-39](../app/Http/Controllers/Auth/LoginController.php#L34-L39)). A correct password is not enough: if the *user's own* status is not `active`, they are signed straight back out with *"Your account has been deactivated. Please contact the administrator."* Note this checks only the person, not their farm (section 2 explains where the farm is checked).
-7. **Session regenerate again** ([line 41](../app/Http/Controllers/Auth/LoginController.php#L41)): a second, redundant regeneration. Harmless.
+6. **Account and farm check** (`User::lockoutReason()`). A correct password is not enough. If the person's own account is not `active`, or their farm is pending, rejected, suspended or archived, they are signed straight back out with a message that says which (the four messages are in section 2). This happens *before* the visit counts as a login, so a blocked person leaves no "login" entry in the audit log.
+7. **Session regenerate again**: a second, redundant regeneration. Harmless.
 8. **Audit entry** ([line 43](../app/Http/Controllers/Auth/LoginController.php#L43)): "Logged in from IP: …" is written to the activity log under the user's farm (under *Platform* for a super admin).
 9. **Redirect** ([line 45](../app/Http/Controllers/Auth/LoginController.php#L45)): `redirect()->intended('/dashboard')`: back to the page the person originally wanted, otherwise `/dashboard`. The "intended" address is stored by the framework from the page that bounced them to the login screen; it is never taken from a request parameter, so it cannot be used as an open redirect. A **super admin** landing on `/dashboard` is forwarded again to `/admin/farms` ([DashboardController.php](../app/Http/Controllers/DashboardController.php#L14-L16)).
 
@@ -71,7 +71,7 @@ The checkbox sends `remember=on`; the controller passes `boolean('remember')` to
 * The framework stores a random value in `users.remember_token` and sends a second, **encrypted** cookie (`remember_web_<hash>`) containing `user-id | token | hash-of-password-hash`.
 * If the normal session has expired, a request that arrives with this cookie is signed in again automatically.
 * The cookie follows the same path/domain/secure/same-site defaults as the session cookie ([CookieServiceProvider](../vendor/laravel/framework/src/Illuminate/Cookie/CookieServiceProvider.php#L19-L21)).
-* **It lasts 400 days, not 30.** The form says *"Remember me for 30 days"* ([login.blade.php](../resources/views/auth/login.blade.php)) but the framework's `rememberDuration` is 576000 minutes (`SessionGuard.php`, line 62) and the app never overrides it. See weakness W3.
+* **It lasts 30 days**, as the form says (*"Remember me for 30 days"*). The framework's own default is 400 days (576000 minutes); the login controller sets 30 days before each attempt. See W3.
 * Because the cookie embeds a hash of the password, **changing the password invalidates every remember-me cookie.**
 
 ### 1.4 Logout
@@ -84,32 +84,33 @@ The checkbox sends `remember=on`; the controller passes `boolean('remember')` to
 4. `regenerateToken()`, a fresh CSRF token;
 5. redirects to `/`, which redirects to `/dashboard`, which (not being signed in) redirects to `/login`.
 
+One exception: **while a platform admin is viewing a farm, *Sign out* means "leave the farm"** and behaves exactly like *Exit to platform admin* (section 6). A real logout there would sign the operator out entirely, file the entry under the farm admin being viewed and rotate that person's remember token.
+
 ---
 
 ## 2. What `CheckActiveUser` blocks, and what the person sees
 
 [CheckActiveUser](../app/Http/Middleware/CheckActiveUser.php) is attached to the whole web group ([bootstrap/app.php](../bootstrap/app.php#L39)), so it runs on **every web request**, not only at login. This is why a user who is deactivated *while signed in* is thrown out on their very next click, not at their next login.
 
-For a signed-in user it computes two things:
+For a signed-in user it asks `User::lockoutReason()`, the same question the login form asks:
 
-* `accountInactive`: the user's own `status` is not `active`;
-* `farmInactive`: the user is not a super admin, belongs to a farm (`farm_id` is set), and either the farm cannot be found or its `status` is not `active`. An **archived** farm is soft-deleted, so the `farm` relation returns nothing, and that case is deliberately treated as inactive ([comment, lines 22-25](../app/Http/Middleware/CheckActiveUser.php#L22-L25)).
+* is the person's own `status` something other than `active`? (that wins);
+* otherwise, for anyone who is not a super admin and belongs to a farm: is the farm missing (an **archived** farm is soft-deleted, so the `farm` relation returns nothing), or is its `status` `pending`, `rejected` or `inactive` (suspended)?
 
-If either is true it signs the user out, wipes and regenerates the session, and redirects to `/login` with an error under the email box.
+If there is a reason it signs the user out, wipes and regenerates the session, and redirects to `/login` with the reason under the email box.
 
 | Situation | Where it is caught | What the person sees |
 |---|---|---|
-| Own account `inactive`, tries to log in | `LoginController` (step 6 above) | *"Your account has been deactivated. Please contact the administrator."* |
-| Own account turned `inactive` while signed in | `CheckActiveUser` on the next request | *"Your account has been deactivated. Contact the administrator."* (slightly different wording, no "Please") |
-| Farm **pending** (not yet approved) | `CheckActiveUser`, one request *after* a successful login | *"Your farm account is not active. Please contact Organett support."* |
-| Farm **rejected** (stored as `inactive`) | same | the same message |
-| Farm **suspended** (`inactive`) | same | the same message |
-| Farm **archived** (soft-deleted) | same | the same message |
-| Account inactive **and** farm inactive | `CheckActiveUser` | the *account* message (it wins) |
+| Own account `inactive` | the login form, or `CheckActiveUser` on the next request if it happens while signed in | *"Your account has been deactivated. Please contact the administrator."* |
+| Farm **pending** (not yet approved) | the same two places | *"Your farm registration is awaiting approval by a platform administrator. You can sign in once it has been approved."* |
+| Farm **rejected** (stored as `rejected`) | same | *"Your farm registration was not approved. Please contact Organett support."* |
+| Farm **suspended** (`inactive`) | same | *"Your farm has been suspended. Please contact Organett support."* |
+| Farm **archived** (soft-deleted) | same | *"Your farm has been archived. Please contact Organett support."* |
+| Account inactive **and** farm closed | same | the *account* message (it wins) |
 | Super admin | exempt | never blocked by this middleware |
 | Non-super-admin with **no farm** (`farm_id` empty) | not blocked | gets in, but `FarmScope` shows them no data at all (section 3.4) |
 
-**[ran it]** For a pending farm the sequence is: `POST /login` → 302 to `/dashboard` (credentials *were* accepted and a session exists) → `GET /dashboard` → 302 to `/login` with the "farm account is not active" message. One `login` entry was written to that farm's activity log even though the person never saw a page. Pending, suspended and archived farms all produce the *identical* message (weakness W1).
+**[ran it]** Before the audit a pending farm's owner was accepted by the login form (a session was created and a `login` entry written), bounced on the next request, and given the same generic message as a suspended or archived farm (W1, W2). Now each case is refused at the form with its own message and no audit entry, and a person already inside when their farm is closed gets the same message on their next click.
 
 ---
 
@@ -144,17 +145,17 @@ A feature is **on by default**: it is only off when an explicit `farm_features` 
 |---|---|---|---|---|
 | `/login`, `/register/farm`, `/forgot-password`, `/reset-password/*` | ✓ | →dashboard | →dashboard | →dashboard |
 | `/dashboard`, `/search` | →login | ✓ | ✓ | ✓ (dashboard forwards to `/admin/farms`) |
-| Batches, harvest, inventory, customers, orders, payments (all verbs) | →login | ✓ | ✓ | ✓ but see W7 |
+| Batches, harvest, inventory, customers, orders, payments (all verbs) | →login | ✓ | ✓ | →master dashboard (W7); use *View as farm* |
 | `/reports` | →login | ✓ if `reports` on, else 403 | same | ✓ |
 | `/reports/export` | →login | **403** | ✓ if `export` on | ✓ |
 | `/activity-logs` | →login | **403** | ✓ if `activity_logs` on | redirected to `/admin/audit` |
-| `/settings`, `/users` | →login | **403** | ✓ | ✓ but see W7 |
+| `/settings`, `/users` | →login | **403** | ✓ | →master dashboard (W7) |
 | `/admin/*` (farms, audit, security, impersonate, account recovery) | →login | **403** | **403** | ✓ |
 | `POST /impersonate/stop`, `POST /logout` | →login | ✓ | ✓ | ✓ |
 
 Two things worth stating plainly to the panel:
 
-* **Only four farm-level areas are admin-only** (`/users`, `/settings`, `/activity-logs`, `/reports/export`). Every other module, including *deleting* orders, customers, batches and payments, is open to farm staff (W8).
+* **Only four farm-level areas are admin-only** (`/users`, `/settings`, `/activity-logs`, `/reports/export`). Every other module, including *deleting* orders, customers, batches and payments, is open to farm staff (W8). Deleting or cancelling an order that has payments recorded is now refused for everyone.
 * The sidebar hides the Admin section from staff, but hiding a link is cosmetic; the middleware above is what enforces it. The one mismatch: the **Reports** link is shown to everyone even if the farm has switched the feature off, so those users get a 403 page.
 
 ### 3.4 How one farm's data is kept from another's
@@ -181,7 +182,7 @@ Every table that holds farm data (batches, harvest records, inventory and its tr
 |---|---|
 | `User`, `Farm`, `FarmFeature`, `SecuritySetting` have no scope | `User` queries are filtered by hand: `UserController::farmUsers()` and `authorizeSameFarm()` ([UserController](../app/Http/Controllers/UserController.php)); the super-admin controllers are intentionally cross-farm and sit behind `can:super-admin`. |
 | Validation rules `exists:` and `unique:` run raw SQL and **ignore** global scopes | The three that matter are handled: harvest batch and order customer are re-checked through a scoped query (`abort_unless(... ->exists(), 404)`), and `batch_code` uniqueness adds `where farm_id` ([BatchController](../app/Http/Controllers/BatchController.php#L30-L40)). `unique:users` is global on purpose (emails and usernames are unique platform-wide), which has a small side effect (W9). |
-| Super admin bypasses the scope | By design on `/admin/*`; but it also applies if a super admin opens a farm-level URL by hand (W7). |
+| Super admin bypasses the scope | By design on `/admin/*`. A `RequireFarmContext` middleware now stops a super admin reaching farm-level pages at all (allowlist: dashboard, search, activity-logs redirect, `admin/*`, `impersonate/stop`), so the bypass cannot mix farms' rows or create orphans (W7). |
 | Cache keys | Per-farm keys: `inventory.categories.farm.<id>`, `customers.dropdown.farm.<id>`, `setting.<id>.<key>`, `nav.badges.<id>` ([Controller::farmCacheKey](../app/Http/Controllers/Controller.php)). |
 | Raw `DB::table(...)` | Only `AccountRecovery` (the `sessions` table, by user id) and the console seeder (filters by `farm_id`). |
 
@@ -195,9 +196,9 @@ Every table that holds farm data (batches, harvest records, inventory and its tr
 4. **The owner is deliberately not signed in.** They are redirected to `/login` with: *"Thanks! '<farm>' has been submitted for review. You can sign in once a platform administrator approves it."* ([lines 88-92](../app/Http/Controllers/FarmRegistrationController.php#L88-L92)). No email is sent to anyone; the application sends no mail except the password-reset link.
 5. **Super admin reviews** at `/admin/farms`: an "Awaiting Approval" block and a sidebar badge list pending farms with the registrant's name and email. Each has **Approve** and **Reject** ([FarmController](../app/Http/Controllers/SuperAdmin/FarmController.php#L62-L94)):
    * *Approve*: only if the farm is still `pending` (otherwise 409); sets it `active`; logged.
-   * *Reject*: only if still `pending`; because the database has no `rejected` status, the farm is stored as **`inactive`**, the optional reason (max 500 chars) is kept only in the audit trail.
+   * *Reject*: only if still `pending`; the farm is stored as **`rejected`** (its own status, so it can be told apart from a suspended one), and the optional reason (max 500 chars) is kept in the audit trail.
 6. **First login of an approved admin**: they enter the same credentials. `LoginController` accepts them, `CheckActiveUser` finds the farm `active`, and they land on `/dashboard`. A brand-new farm has no data, so every dashboard panel shows its empty-state text (*"No active batches right now."*, *"No harvest records yet."*, …). There is no onboarding wizard, and the sidebar shows the product name, not the farm's own name. `php artisan organett:seed-demo --farm=<id|slug>` can fill a farm with demo data for presentations.
-7. **If they try to log in before approval** they see the generic "farm account is not active" message, with no mention of review (W1).
+7. **If they try to log in before approval** they see *"Your farm registration is awaiting approval by a platform administrator…"*; after a rejection, *"…was not approved. Please contact Organett support."*
 
 Super admins can also archive a farm (soft-delete: nothing is erased, its users are locked out, it disappears from lists) and restore it from *Archived Farms*, which brings it back with the status it had.
 
@@ -210,8 +211,8 @@ Super admins can also archive a farm (soft-delete: nothing is erased, its users 
 1. `GET /forgot-password`, then `POST /forgot-password` (`throttle:password-reset`: 3 per minute per IP, 5 per hour per email). Validation: `email` required and well-formed ([ForgotPasswordController](../app/Http/Controllers/Auth/ForgotPasswordController.php#L20-L23)).
 2. The controller asks Laravel's password broker to send a link and then **ignores the outcome**: the response is always *"If that email is registered, a password reset link has been sent."* so the form cannot be used to find out who is registered (tested in `SecurityTest`; the broker itself also runs in a timebox).
 3. If the email exists, the broker creates a random token, stores **only its hash** in `password_reset_tokens` (replacing any earlier one), and emails a link `/reset-password/<token>?email=<email>`. Tokens expire after **60 minutes**; asking again within **60 seconds** sends nothing new (`config/auth.php`). The email goes through the configured mailer (the `log` mailer in local development, so the link appears in `storage/logs`). The link is sent for any existing account, including deactivated users and users of inactive farms.
-4. `GET /reset-password/{token}` shows the form (token as a hidden field). `POST /reset-password` (same throttle) validates token, email and the new password (confirmed, strong rule), then the broker checks that the token matches and is unexpired. On success the controller ([ResetPasswordController](../app/Http/Controllers/Auth/ResetPasswordController.php#L28-L38)) stores the new bcrypt hash, rotates `remember_token` (all remember-me cookies die), fires the framework `PasswordReset` event, and the broker deletes the token (single use). The person is sent to `/login` with *"Your password has been reset."* They are **not** signed in automatically. A bad or expired token returns *"This password reset token is invalid."*
-5. **What a reset does not do:** it does not end sessions that are already signed in on other devices (W4).
+4. `GET /reset-password/{token}` shows the form (token as a hidden field). `POST /reset-password` (same throttle) validates token, email and the new password (confirmed, strong rule), then the broker checks that the token matches and is unexpired. On success the controller ([ResetPasswordController](../app/Http/Controllers/Auth/ResetPasswordController.php)) stores the new bcrypt hash, rotates `remember_token` (all remember-me cookies die), clears the account's other sessions, writes the audit entry, fires the framework `PasswordReset` event, and the broker deletes the token (single use). The person is sent to `/login` with *"Your password has been reset."* They are **not** signed in automatically. A bad or expired token returns *"This password reset token is invalid."*
+5. **The reset also signs the account out everywhere else and is audited.** The controller calls the same `AccountRecovery` routine as the admin and console resets, which clears the account's stored sessions and writes a `password_reset` entry to its farm's log (W4). The sign-out only works with the `database` session driver (W5).
 
 ### 5.2 Super-admin account recovery (for people locked out)
 
@@ -294,7 +295,7 @@ This is a deliberate feature, not a bug: a super admin can switch off, **platfor
 | `HttpOnly` | on (JavaScript cannot read it) | default |
 | `SameSite` | `lax` (the browser withholds the cookie on cross-site POSTs) | default |
 | Serialization | JSON | `config/session.php` |
-| Remember-me cookie | 400 days, encrypted | framework |
+| Remember-me cookie | 30 days, encrypted | `LoginController` (framework default is 400) |
 
 The cookies themselves are encrypted by the framework's `EncryptCookies` middleware with the app key.
 
@@ -360,26 +361,26 @@ The cookies themselves are encrypted by the framework's `EncryptCookies` middlew
 
 ## 9. Weaknesses and edge cases found (reported, not fixed)
 
-Evidence column: **ran** = reproduced with a throwaway test against the current code; **read** = established by reading the code and the framework source; severity is my judgement for a small multi-tenant app.
+Evidence column (state of the code *when found*): **ran** = reproduced with a throwaway test; **read** = established by reading the code and the framework source; severity is my judgement for a small multi-tenant app.
 
-| # | Finding | Evidence | Severity |
-|---|---|---|---|
-| W1 | **Pending, rejected, suspended and archived farms get one identical message** at login ("…not active. Please contact Organett support."). A newly registered owner who tries to sign in before approval is not told the farm is *awaiting review*. A rejected farm is stored as plain `inactive`, so it cannot even be distinguished in the database from a suspended one. | ran | Medium (UX) |
-| W2 | **Login "succeeds" before the farm is checked.** For a pending/archived farm, a session is created, a `login` row is written to that farm's audit log, and only the next request bounces them. The audit trail therefore shows logins for people who never saw a page. | ran | Low |
-| W3 | **"Remember me for 30 days" is wrong.** The cookie lasts 400 days (framework default 576000 min, never overridden). | read | Medium (misleading) |
-| W4 | **A self-service password reset does not sign out other devices.** The app uses no `AuthenticateSession` middleware and the reset only rotates the remember token, so a session that was already signed in elsewhere stays valid after the owner resets a stolen/compromised password. (The admin/console recovery path *does* purge sessions.) | read | Medium |
-| W5 | **Session purge in `AccountRecovery` is a silent no-op with the `file` session driver** (the local `.env`). It reports "Cleared 0 session(s)" and the old sessions survive. Production (`render.yaml`, `deploy.sh`) uses `database`, so it works there. | read | Low (dev only) |
-| W6 | **Logging out while impersonating** signs the super admin out completely (not back to the admin view) and writes the "Logged out" audit entry as the **farm admin**, and rotates the **farm admin's** remember token (kicking their remember-me devices). The banner offers "Exit", but the sidebar still shows a normal *Sign out* button. | ran | Low |
-| W7 | **A super admin who types a farm-level URL by hand** (`/orders`, `/batches`, `/customers`, …) sees **every farm's rows mixed together**, and anything they create is stored with an **empty `farm_id`** (an orphan no farm can see). The sidebar hides these pages, but nothing blocks them. | ran | Low–Medium |
-| W8 | **Farm staff have broad destructive power.** Outside `/users`, `/settings`, `/activity-logs` and `/reports/export`, routes are open to staff: a staff user can delete an order **together with its recorded payments**, delete customers/batches/inventory/harvests and payment records, adjust stock, and set an order's payment status to *anything* (a cancelled/"unpaid" status on a fully paid order was accepted, leaving 500 recorded as paid while the order says unpaid). This is a business-rule question, flagged for decision in Phase 2. | ran | Medium |
-| W9 | **Sign-up reveals whether an email is registered** ("The email has already been taken."), whereas login and forgot-password are carefully non-revealing. Farm admins also learn that a username is used elsewhere (`unique:users` is platform-wide). | ran | Low |
-| W10 | **Throttling is per account+IP and per IP, with no lockout or alert**, so a guesser rotating IP addresses is never limited per account. Counters are in the local file cache, so they are not shared if the app ever runs on more than one server. | read | Low |
-| W11 | **CSP still allows `'unsafe-inline'` scripts**, which weakens its protection against injected script. Documented in the code; needs the inline handlers moved to bundled files. | read | Low |
-| W12 | **Impersonation edge:** if the viewed farm is suspended/archived or the viewed user is deactivated while the super admin is "inside", `CheckActiveUser` destroys the whole session; the operator lands on the login page and **no `impersonate_end` entry is written**. `stop()` also does not re-check that the stored super-admin id is still an active super admin. | read | Low |
-| W13 | **Kill-switch value is cached 5 minutes** (dropped immediately on the server that saved it). On a single server this is invisible; on several servers with per-server file caches another one could lag. | read | Info |
-| W14 | **`Secure` cookie flag is set on Render but not by `deploy.sh`** (the VPS path sets no `SESSION_SECURE_COOKIE`), so a deployment created from that script sends the session cookie without the Secure flag unless it is added to `.env`. | read | Low–Medium (ops) |
-| W15 | **Failed logins log the typed email to `laravel.log`**, which can contain a password pasted into the email box by mistake. | read | Info |
-| W16 | **Inconsistent wording / legacy role:** the deactivated-account message differs between login ("Please contact…") and the middleware ("Contact…"); the sidebar treats a legacy `admin` role as an administrator while `AdminMiddleware` does not. | read | Info |
+| # | Finding | Evidence | Severity | Status after the audit |
+|---|---|---|---|---|
+| W1 | **Pending, rejected, suspended and archived farms get one identical message** at login ("…not active. Please contact Organett support."). A newly registered owner who tries to sign in before approval is not told the farm is *awaiting review*. A rejected farm is stored as plain `inactive`, so it cannot even be distinguished in the database from a suspended one. | ran | Medium (UX) | **Fixed** (B-14) |
+| W2 | **Login "succeeds" before the farm is checked.** For a pending/archived farm, a session is created, a `login` row is written to that farm's audit log, and only the next request bounces them. The audit trail therefore shows logins for people who never saw a page. | ran | Low | **Fixed** (B-14) |
+| W3 | **"Remember me for 30 days" is wrong.** The cookie lasts 400 days (framework default 576000 min, never overridden). | read | Medium (misleading) | **Fixed** (B-11) |
+| W4 | **A self-service password reset does not sign out other devices.** The app uses no `AuthenticateSession` middleware and the reset only rotates the remember token, so a session that was already signed in elsewhere stays valid after the owner resets a stolen/compromised password. (The admin/console recovery path *does* purge sessions.) | read | Medium | **Fixed** (B-13) |
+| W5 | **Session purge in `AccountRecovery` is a silent no-op with the `file` session driver** (the local `.env`). It reports "Cleared 0 session(s)" and the old sessions survive. Production (`render.yaml`, `deploy.sh`) uses `database`, so it works there. | read | Low (dev only) | Open: dev-only, documented |
+| W6 | **Logging out while impersonating** signs the super admin out completely (not back to the admin view) and writes the "Logged out" audit entry as the **farm admin**, and rotates the **farm admin's** remember token (kicking their remember-me devices). The banner offers "Exit", but the sidebar still shows a normal *Sign out* button. | ran | Low | **Fixed** (B-12) |
+| W7 | **A super admin who types a farm-level URL by hand** (`/orders`, `/batches`, `/customers`, …) sees **every farm's rows mixed together**, and anything they create is stored with an **empty `farm_id`** (an orphan no farm can see). The sidebar hides these pages, but nothing blocks them. | ran | Low–Medium | **Fixed** (B-01) |
+| W8 | **Farm staff have broad destructive power.** Outside `/users`, `/settings`, `/activity-logs` and `/reports/export`, routes are open to staff: a staff user can delete an order **together with its recorded payments**, delete customers/batches/inventory/harvests and payment records, adjust stock, and set an order's payment status to *anything* (a cancelled/"unpaid" status on a fully paid order was accepted, leaving 500 recorded as paid while the order says unpaid). This is a business-rule question, flagged for decision in Phase 2. | ran | Medium | **Partly fixed**: money cases blocked (B-07, B-08, B-09); who may delete is a policy decision for the owner |
+| W9 | **Sign-up reveals whether an email is registered** ("The email has already been taken."), whereas login and forgot-password are carefully non-revealing. Farm admins also learn that a username is used elsewhere (`unique:users` is platform-wide). | ran | Low | Open: sign-up still reveals a registered email |
+| W10 | **Throttling is per account+IP and per IP, with no lockout or alert**, so a guesser rotating IP addresses is never limited per account. Counters are in the local file cache, so they are not shared if the app ever runs on more than one server. | read | Low | Open |
+| W11 | **CSP still allows `'unsafe-inline'` scripts**, which weakens its protection against injected script. Documented in the code; needs the inline handlers moved to bundled files. | read | Low | Open |
+| W12 | **Impersonation edge:** if the viewed farm is suspended/archived or the viewed user is deactivated while the super admin is "inside", `CheckActiveUser` destroys the whole session; the operator lands on the login page and **no `impersonate_end` entry is written**. `stop()` also does not re-check that the stored super-admin id is still an active super admin. | read | Low | Open |
+| W13 | **Kill-switch value is cached 5 minutes** (dropped immediately on the server that saved it). On a single server this is invisible; on several servers with per-server file caches another one could lag. | read | Info | Open (info) |
+| W14 | **`Secure` cookie flag is set on Render but not by `deploy.sh`** (the VPS path sets no `SESSION_SECURE_COOKIE`), so a deployment created from that script sends the session cookie without the Secure flag unless it is added to `.env`. | read | Low–Medium (ops) | Open: ops note (set `SESSION_SECURE_COOKIE=true` once HTTPS is live) |
+| W15 | **Failed logins log the typed email to `laravel.log`**, which can contain a password pasted into the email box by mistake. | read | Info | Open (info) |
+| W16 | **Inconsistent wording / legacy role:** the deactivated-account message differs between login ("Please contact…") and the middleware ("Contact…"); the sidebar treats a legacy `admin` role as an administrator while `AdminMiddleware` does not. | read | Info | Open (info) |
 
 ### Checked and found sound (so the panel can rely on them)
 
