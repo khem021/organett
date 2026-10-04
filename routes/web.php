@@ -42,7 +42,8 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout')->middleware('auth');
 
-Route::middleware('auth')->group(function () {
+// 'farm' keeps the platform owner (who belongs to no farm) out of farm pages; see RequireFarmContext.
+Route::middleware(['auth', 'farm'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/search', [SearchController::class, 'index'])->name('search');
 

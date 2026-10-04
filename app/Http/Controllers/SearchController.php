@@ -15,7 +15,8 @@ class SearchController extends Controller
     {
         $q = trim((string) $request->query('q', ''));
 
-        if (mb_strlen($q) < 2) {
+        // The platform owner has no farm, and the scope does not filter for them.
+        if (mb_strlen($q) < 2 || $request->user()->isSuperAdmin()) {
             return response()->json(['groups' => []]);
         }
 

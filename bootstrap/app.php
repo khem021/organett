@@ -4,6 +4,7 @@ use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CheckActiveUser;
 use App\Http\Middleware\CheckFarmFeature;
 use App\Http\Middleware\ReadOnlyImpersonation;
+use App\Http\Middleware\RequireFarmContext;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminMiddleware::class,
             'feature' => CheckFarmFeature::class,
+            'farm' => RequireFarmContext::class,
         ]);
         // Kick deactivated users out on every web request
         $middleware->appendToGroup('web', CheckActiveUser::class);
