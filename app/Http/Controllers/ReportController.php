@@ -56,11 +56,13 @@ class ReportController extends Controller
             ];
         });
 
-        // Top customers. Customers with no sales sum to NULL, and Postgres sorts
-        // NULLs first on DESC, so treat them as zero. COALESCE rather than NULLS LAST,
-        // which MySQL does not understand.
+        // Top customers. Customers with no sales sum to NULL, and Postgres sorts NULLs
+        // first on DESC, so order by the same sum with NULL as zero. It has to be the
+        // subquery itself: Postgres will not accept the total_sales alias inside an
+        // expression, and NULLS LAST is not understood by MySQL.
         $topCustomers = Customer::withSum('sales as total_sales', 'amount')
-            ->orderByRaw('COALESCE(total_sales, 0) DESC')
+            ->orderByDesc(Sale::query()->selectRaw('COALESCE(SUM(amount), 0)')->whereColumn('sales.customer_id', 'customers.id'))
+            ->orderBy('customer_name')
             ->take(5)->get();
 
         // Harvest by grade
