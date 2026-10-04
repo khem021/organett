@@ -9,6 +9,12 @@ class ActivityLogController extends Controller
 {
     public function index(Request $request)
     {
+        // Super admins bypass FarmScope, so this page would hand them every farm's
+        // log merged together with no attribution. Send them to the audit view.
+        if ($request->user()?->isSuperAdmin()) {
+            return redirect()->route('admin.audit');
+        }
+
         $query = ActivityLog::with('user')->latest();
 
         if ($request->filled('module')) {

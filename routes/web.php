@@ -15,6 +15,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SuperAdmin\AuditController as SuperAdminAuditController;
 use App\Http\Controllers\SuperAdmin\FarmController as SuperAdminFarmController;
 use App\Http\Controllers\SuperAdmin\SecurityController as SuperAdminSecurityController;
 use App\Http\Controllers\UserController;
@@ -117,6 +118,9 @@ Route::middleware('auth')->group(function () {
         Route::patch('/farms/{farm}/status', [SuperAdminFarmController::class, 'updateStatus'])->name('farms.status');
         Route::get('/farms/{farm}/features', [SuperAdminFarmController::class, 'features'])->name('farms.features');
         Route::patch('/farms/{farm}/features', [SuperAdminFarmController::class, 'updateFeatures'])->name('farms.features.update');
+
+        // Cross-farm audit trail
+        Route::get('/audit', [SuperAdminAuditController::class, 'index'])->name('audit');
 
         // Platform-wide security kill switches
         Route::get('/security', [SuperAdminSecurityController::class, 'index'])->name('security');
