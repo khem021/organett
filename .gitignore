@@ -28,3 +28,6 @@ Homestead.yaml
 Thumbs.db
 .env.bak-*
 .env.bak
+
+# Before/after screenshots from the UI pass; too heavy for the repo
+/docs/screenshots/
