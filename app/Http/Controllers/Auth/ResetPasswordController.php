@@ -7,6 +7,7 @@ use App\Services\AccountRecovery;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRules;
 
 class ResetPasswordController extends Controller
@@ -25,7 +26,11 @@ class ResetPasswordController extends Controller
         ]);
 
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            // The email is matched in lower case, as on the login and forgot-password forms.
+            [
+                'email' => fn ($query) => $query->whereRaw('lower(email) = ?', [Str::lower(trim($request->input('email')))]),
+                ...$request->only('password', 'password_confirmation', 'token'),
+            ],
             function ($user, $password) {
                 // Same routine as the admin and console resets: it also signs the account
                 // out of every other device and leaves an entry in the audit trail, which

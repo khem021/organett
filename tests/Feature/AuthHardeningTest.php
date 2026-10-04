@@ -214,3 +214,16 @@ it('lists a rejected farm for the platform admin and lets them reactivate it', f
 
     expect($farm->fresh()->status)->toBe('active');
 });
+
+it('completes a password reset when the email is typed in another letter case', function () {
+    [$farm, $admin] = makeFarm('Case Reset Complete Farm');
+    $admin->update(['email' => 'case.complete@example.test']);
+    $token = Password::createToken($admin);
+
+    $this->post('/reset-password', [
+        'token' => $token, 'email' => 'CASE.Complete@Example.TEST',
+        'password' => 'Br4nd-New!Passw0rd', 'password_confirmation' => 'Br4nd-New!Passw0rd',
+    ])->assertRedirect(route('login'));
+
+    expect(Hash::check('Br4nd-New!Passw0rd', $admin->fresh()->password))->toBeTrue();
+});
