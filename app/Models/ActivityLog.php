@@ -10,7 +10,7 @@ class ActivityLog extends Model
 {
     use BelongsToFarm;
 
-    protected $fillable = ['farm_id', 'user_id', 'module', 'action', 'description'];
+    protected $fillable = ['farm_id', 'user_id', 'ip_address', 'module', 'action', 'description'];
 
     public function user(): BelongsTo
     {
