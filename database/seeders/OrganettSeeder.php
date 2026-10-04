@@ -118,5 +118,29 @@ class OrganettSeeder extends Seeder
             ['farm_id' => 1, 'user_id' => 1, 'module' => 'Orders', 'action' => 'Create', 'description' => 'Created order ORD-2026-006.', 'created_at' => now(), 'updated_at' => now()],
             ['farm_id' => 1, 'user_id' => 1, 'module' => 'Sales', 'action' => 'Create', 'description' => 'Added a sale worth PHP 630.00.', 'created_at' => now(), 'updated_at' => now()],
         ]);
+
+        $this->advanceSequences();
+    }
+
+    /**
+     * Rows above are inserted with fixed ids. A PostgreSQL sequence does not see
+     * those, so without this the next farm, user or order created through the app
+     * is handed id 1 and fails with a duplicate key. (SQLite carries on from the
+     * highest id by itself, which is why this only shows up on PostgreSQL.)
+     */
+    private function advanceSequences(): void
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
+        $tables = [
+            'users', 'farms', 'farm_features', 'settings', 'inventory', 'production_batches', 'harvest_records',
+            'customers', 'orders', 'deliveries', 'sales', 'alerts', 'activity_logs',
+        ];
+
+        foreach ($tables as $table) {
+            DB::statement("select setval(pg_get_serial_sequence('{$table}', 'id'), coalesce((select max(id) from \"{$table}\"), 1))");
+        }
     }
 }
